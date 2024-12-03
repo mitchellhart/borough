@@ -7,8 +7,20 @@ const path = require('path');
 const { Pool } = require('pg');
 
 // Initialize Firebase Admin and Express app first
+const firebaseConfig = {
+  type: "service_account",
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_AUTH_URI,
+  token_uri: process.env.FIREBASE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_CERT_URL,
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
+};
+
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
+  credential: admin.credential.cert(firebaseConfig),
   databaseURL: process.env.FIREBASE_DATABASE_URL
 });
 const app = express();
@@ -173,3 +185,7 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+console.log('Firebase Project ID:', process.env.FIREBASE_PROJECT_ID);
+console.log('Firebase Client Email:', process.env.FIREBASE_CLIENT_EMAIL);
+// Don't log the private key for security reasons
