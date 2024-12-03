@@ -1,0 +1,141 @@
+{
+    "property": {
+      "address": "2810 S Irving St, Seattle, WA 98144",
+      "inspectionDate": "2024-03-27",
+      "inspectedBy": {
+        "name": "Thurston McMurray",
+        "license": "1275"
+      }
+    },
+    "findings": {
+      "Plumbing": [
+        {
+          "item": "Sewer Line",
+          "issue": "Condition of below-ground connections unknown",
+          "recommendation": "Conduct a sewer scope inspection",
+          "category": "Plumbing",
+          "urgency": 4,
+          "estimate": "$250 - $500"
+        }
+      ],
+      "Electrical": [
+        {
+          "item": "Main Panel and Wiring",
+          "issue": "Not assessed",
+          "recommendation": "Not assessed",
+          "category": "Electrical",
+          "urgency": 0,
+          "estimate": "Not assessed"
+        }
+      ],
+      "Roofing": [
+        {
+          "item": "Roof Materials and Drainage",
+          "issue": "Not assessed",
+          "recommendation": "Not assessed",
+          "category": "Roofing",
+          "urgency": 0,
+          "estimate": "Not assessed"
+        }
+      ],
+      "Foundation and Masonry": [
+        {
+          "item": "Foundation and Masonry",
+          "issue": "Not assessed",
+          "recommendation": "Not assessed",
+          "category": "Foundation and Masonry",
+          "urgency": 0,
+          "estimate": "Not assessed"
+        }
+      ],
+      "HVAC and Ventilation": [
+        {
+          "item": "Hydronic Heating System",
+          "issue": "Limited functionality of radiators on upper floors",
+          "recommendation": "Evaluate and service",
+          "category": "HVAC and Ventilation",
+          "urgency": 3,
+          "estimate": "$200 - $500"
+        },
+        {
+          "item": "Mini-Split Heat Pump",
+          "issue": "Unusual noise from second-floor wall unit",
+          "recommendation": "Evaluate and service",
+          "category": "HVAC and Ventilation",
+          "urgency": 3,
+          "estimate": "$150 - $350"
+        }
+      ],
+      "Interior Finishes (Drywall, Trim, Paint)": [
+        {
+          "item": "Interior Windows and Drywall",
+          "issue": "Split caulking and small cracks in drywall",
+          "recommendation": "Repair for cosmetic reasons",
+          "category": "Interior Finishes",
+          "urgency": 2,
+          "estimate": "$150 - $400"
+        }
+      ],
+      "Exterior (Siding, Gutters, Trim)": [
+        {
+          "item": "Front Door",
+          "issue": "Exterior wood trim requires painting",
+          "recommendation": "Paint to preserve wood",
+          "category": "Exterior",
+          "urgency": 1,
+          "estimate": "$25 - $50"
+        }
+      ],
+      "Windows and Doors": [
+        {
+          "item": "Interior Window Caulking",
+          "issue": "Split caulking observed",
+          "recommendation": "Repair as desired for cosmetic reasons",
+          "category": "Windows and Doors",
+          "urgency": 2,
+          "estimate": "$150 - $400"
+        }
+      ],
+      "Appliances": [
+        {
+          "item": "General Appliances",
+          "issue": "Not assessed",
+          "recommendation": "Not assessed",
+          "category": "Appliances",
+          "urgency": 0,
+          "estimate": "Not assessed"
+        }
+      ],
+      "Insulation and Energy Efficiency": [
+        {
+          "item": "Insulation and Energy Systems",
+          "issue": "Not assessed",
+          "recommendation": "Not assessed",
+          "category": "Insulation and Energy Efficiency",
+          "urgency": 0,
+          "estimate": "Not assessed"
+        }
+      ],
+      "Site and Landscaping": [
+        {
+          "item": "Site Grading and Landscaping",
+          "issue": "Not assessed",
+          "recommendation": "Not assessed",
+          "category": "Site and Landscaping",
+          "urgency": 0,
+          "estimate": "Not assessed"
+        }
+      ],
+      "Specialty Systems": [
+        {
+          "item": "Specialty Systems",
+          "issue": "Not assessed",
+          "recommendation": "Not assessed",
+          "category": "Specialty Systems",
+          "urgency": 0,
+          "estimate": "Not assessed"
+        }
+      ]
+    }
+  }
+  
