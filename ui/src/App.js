@@ -10,7 +10,7 @@ import UserFiles from './components/UserFiles';
 import BoroughLogo from './assets/Borough-logo.svg';
 import ReportView from './components/ReportView';
 import ScrollToTop from './components/ScrollToTop';
-import PaymentForm from './components/PaymentForm';
+// import PaymentForm from './components/PaymentForm';
 import { motion } from "motion/react"
 import { Helmet } from 'react-helmet';
 
@@ -76,7 +76,7 @@ function App() {
         <div className="bg-white rounded-3xl p-8">
           <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
           {showAuth && <Auth onClose={() => setShowAuth(false)} />}
-          {showPayment && <PaymentForm onClose={() => setShowPayment(false)} />}
+          {/* {showPayment && <PaymentForm onClose={() => setShowPayment(false)} />} */}
           <ScrollToTop />
           <Routes>
             <Route path="/" element={

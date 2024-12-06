@@ -5,7 +5,6 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { getStorage } = require('firebase-admin/storage');
 const fs = require('fs');
 const { PdfReader } = require('pdfreader');
@@ -280,25 +279,6 @@ console.log('Firebase Project ID:', process.env.FIREBASE_PROJECT_ID);
 console.log('Firebase Client Email:', process.env.FIREBASE_CLIENT_EMAIL);
 // Don't log the private key for security reasons
 
-app.post("/api/create-payment-intent", async (req, res) => {
-  try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: 1000, // amount in cents
-      currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
-
-    res.json({
-      clientSecret: paymentIntent.client_secret,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Add a delete endpoint that handles both Storage and Database
 app.delete('/api/files/:fileId', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.uid;
@@ -555,3 +535,5 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch analysis' });
   }
 });
+
+
