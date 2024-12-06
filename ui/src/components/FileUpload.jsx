@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { getAuth } from 'firebase/auth';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 function FileUpload({ onFileProcessed }) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -40,7 +42,7 @@ function FileUpload({ onFileProcessed }) {
       const formData = new FormData();
       formData.append('file', files[0]);
 
-      const response = await fetch('http://localhost:3001/api/files', {
+      const response = await fetch(`${API_URL}/api/files`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -66,7 +68,7 @@ function FileUpload({ onFileProcessed }) {
   };
 
   const analyzeFile = async (fileId, token) => {
-    const response = await fetch(`/api/files/${fileId}/analyze`, {
+    const response = await fetch(`${API_URL}/api/files/${fileId}/analyze`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

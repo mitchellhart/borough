@@ -33,7 +33,14 @@ if (!process.env.FIREBASE_PROJECT_ID) {
   throw new Error('FIREBASE_PROJECT_ID is not set in environment variables');
 }
 
-// First, validate the storage bucket
+// Add this debug logging
+console.log('Environment variables:', {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  databaseUrl: process.env.FIREBASE_DATABASE_URL
+});
+
+// Then the existing check
 if (!process.env.FIREBASE_STORAGE_BUCKET) {
   console.error('Storage bucket not found in environment');
   throw new Error('FIREBASE_STORAGE_BUCKET is not configured');
@@ -59,7 +66,7 @@ const app = express();
 // Add your middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-render-domain.onrender.com', 'https://borough-ai.com']
+    ? ['https://borough-ai.com', 'https://borough-ai.onrender.com']
     : 'http://localhost:3000',
   credentials: true
 }));
