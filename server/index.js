@@ -369,10 +369,14 @@ app.get('/api/files/:fileId', authenticateUser, async (req, res) => {
   }
 });
 
+// Add validation for OpenAI API key
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY is not set in environment variables');
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
 
 app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
   try {
