@@ -114,6 +114,8 @@ pool.query(`
     file_path TEXT NOT NULL,
     file_size INTEGER NOT NULL,
     mime_type TEXT NOT NULL,
+    text_content TEXT,
+    ai_analysis JSONB,
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `).catch(err => console.error('Error creating files table:', err));
