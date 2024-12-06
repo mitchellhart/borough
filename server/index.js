@@ -133,8 +133,13 @@ pool.query(`
   )
 `).catch(err => console.error('Error creating file_analyses table:', err));
 
-// After Firebase admin initialization, initialize storage
+// This should come AFTER admin.initializeApp()
 const bucket = getStorage().bucket(process.env.FIREBASE_STORAGE_BUCKET);
+
+if (!process.env.FIREBASE_STORAGE_BUCKET) {
+  console.error('Storage bucket not found in environment');
+  throw new Error('FIREBASE_STORAGE_BUCKET is not configured');
+}
 
 // File upload endpoint with database integration
 app.post('/api/files', authenticateUser, upload.single('file'), async (req, res) => {
