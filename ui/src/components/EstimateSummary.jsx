@@ -42,7 +42,8 @@ function useCountUp(end, duration = 1000) {
   return count;
 }
 
-function EstimateSummary() {
+function EstimateSummary(props) {
+  const { address, date, inspector, license, estimate, summary } = props;
   const [urgencyLevel, setUrgencyLevel] = useState('Necessary');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -58,9 +59,9 @@ function EstimateSummary() {
     { name: 'Appliance', cost: 200 },
   ];
 
-  const totalEstimate = categories.reduce((sum, cat) => sum + cat.cost, 0);
-
-  const animatedTotal = useCountUp(totalEstimate, 2000); // 2000ms = 2 second animation
+  // const totalEstimate = categories.reduce((sum, cat) => sum + cat.cost, 0);
+  
+  const animatedTotal = useCountUp(estimate, 2000);
 
   const chartData = {
     labels: categories.map(cat => cat.name),
@@ -105,13 +106,19 @@ function EstimateSummary() {
   };
 
   return (
-    <div className="p-8">
+      <div className="p-8">
       <div className="mb-12">
-        <div className="text-right mb-8">
-          <h2 className="text-lg font-medium text-gray-600 mb-2">
-            Estimate
-          </h2>
-          <div className="text-8xl font-bold font-nohemi">${animatedTotal.toLocaleString()}.00</div>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-l font-nohemi text-gray-800">{address}</h1>
+            <h1 className="text-5xl font-nohemi text-gray-800">Inspection report: <br/> {date}</h1>
+          </div>
+          <div className="text-right">
+            <h2 className="text-lg font-medium text-gray-600 mb-2">
+              Estimate
+            </h2>
+            <div className="text-8xl font-bold font-nohemi">${animatedTotal.toLocaleString()}</div>
+          </div>
         </div>
 
         {isModalOpen && (
@@ -149,9 +156,7 @@ function EstimateSummary() {
           <div className="max-w-2xl">
             <h3 className="text-xl font-bold mb-4">Summary</h3>
             <p className="text-gray-700">
-              This home requires several repairs and updates across multiple systems. The most significant costs are in plumbing 
-              and electrical work, with moderate expenses in HVAC and roofing. Overall, the property is in moderate condition 
-              and these repairs will significantly improve its functionality and value.
+              {summary}
             </p>
           </div>
 

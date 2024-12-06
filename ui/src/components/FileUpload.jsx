@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { getAuth } from 'firebase/auth';
 
-function FileUpload() {
+function FileUpload({ onFileProcessed }) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -34,6 +35,7 @@ function FileUpload() {
 
   const handleFiles = async (files) => {
     try {
+      setIsLoading(true);
       const token = await getAuth().currentUser.getIdToken();
       const formData = new FormData();
       formData.append('file', files[0]);
@@ -51,10 +53,29 @@ function FileUpload() {
       }
 
       const data = await response.json();
+      await analyzeFile(data.file.id, token);
       console.log('File uploaded successfully:', data);
+      
+      if (onFileProcessed) onFileProcessed();
+      
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const analyzeFile = async (fileId, token) => {
+    const response = await fetch(`/api/files/${fileId}/analyze`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    console.log('AI analyzed successfully:', data);
+    return data;
   };
 
   return (
@@ -104,9 +125,16 @@ function FileUpload() {
           </div>
         </label>
 
-        {selectedFile && (
+        {selectedFile && !isLoading && (
           <div className="mt-4 p-4 bg-gray-50 rounded">
             <p className="font-medium">{selectedFile.name}</p>
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="mt-4 p-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+            <p className="mt-2 text-gray-600">Analyzing your file...</p>
           </div>
         )}
       </div>
