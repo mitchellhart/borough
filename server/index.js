@@ -12,6 +12,10 @@ const { PdfReader } = require('pdfreader');
 const OpenAI = require('openai');
 const { type } = require('os');
 
+const uploadsDir = 'uploads';
+if (!fs.existsSync(uploadsDir)){
+    fs.mkdirSync(uploadsDir);
+}
 
 const firebaseConfig = {
   type: "service_account",
@@ -45,7 +49,7 @@ const app = express();
 // Add your middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'borough-ai.com' 
+    ? ['https://your-render-domain.onrender.com', 'https://borough-ai.com']
     : 'http://localhost:3000',
   credentials: true
 }));
@@ -259,11 +263,11 @@ app.get('/api/files', authenticateUser, async (req, res) => {
 
 // Move this AFTER all API routes but BEFORE the catch-all route
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('path/to/your/build/folder'));
+  app.use(express.static('../ui/build'));
   
   // Handle React routing
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'path/to/your/build/folder', 'index.html'));
+    res.sendFile(path.join(__dirname, '../ui/build', 'index.html'));
   });
 }
 
