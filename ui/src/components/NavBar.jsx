@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import BoroughLogo from '../assets/Borough-logo.svg';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 function NavBar({ onLoginClick, user }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const isIndexPage = location.pathname === '/';
 
   useEffect(() => {
@@ -27,6 +28,7 @@ function NavBar({ onLoginClick, user }) {
     try {
       await signOut(auth);
       setIsMenuOpen(false);
+      navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }

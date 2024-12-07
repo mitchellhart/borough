@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import EstimateSummary from './EstimateSummary';
 import ReportSection from './ReportSection';
 import { motion } from "motion/react"
@@ -12,19 +12,11 @@ function ReportView() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const auth = getAuth();
 
   useEffect(() => {
-
-    const fetchFileMetadata = async () => {
+    const fetchFileMetadata = async (user) => {
       try {
-        const auth = getAuth();
-        const user = auth.currentUser;
-        if (!user) {
-          navigate('/login');
-          return;
-        }
-
         const token = await user.getIdToken();
         const response = await fetch(
           `${process.env.REACT_APP_API_URL}/api/files/${fileId}`,
@@ -51,8 +43,18 @@ function ReportView() {
       }
     };
 
-    fetchFileMetadata();
-  }, [fileId, navigate]);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchFileMetadata(user);
+      } else {
+        setLoading(false);
+        navigate('/login');
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [fileId, navigate, auth]);
 
   // Add a debug check before render
   console.log('Current file state:', file);

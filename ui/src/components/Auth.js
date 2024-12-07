@@ -1,148 +1,109 @@
-import { useState, useEffect } from 'react';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import React, { useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
-function Auth({ onClose }) {
+function Auth({ onClose, initialMode = 'login', onAuthSuccess }) {
+  // Use initialMode prop to set the default mode
+  const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   
   const auth = getAuth();
-  const googleProvider = new GoogleAuthProvider();
-
-  useEffect(() => {
-    const handleEsc = (event) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleEsc);
-
-    return () => {
-      window.removeEventListener('keydown', handleEsc);
-    };
-  }, [onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
     try {
-      if (isSignUp) {
+      if (mode === 'signup') {
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+      
+      // Clear form
+      setEmail('');
+      setPassword('');
+      
+      // Call onAuthSuccess if provided
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
+      
+      // Close the modal
       onClose();
     } catch (error) {
-      switch (error.code) {
-        case 'auth/network-request-failed':
-          setError('Network error. Please check your internet connection.');
-          break;
-        case 'auth/weak-password':
-          setError('Password should be at least 6 characters.');
-          break;
-        case 'auth/email-already-in-use':
-          setError('This email is already registered. Try logging in instead.');
-          break;
-        case 'auth/invalid-email':
-          setError('Please enter a valid email address.');
-          break;
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          setError('Invalid email or password.');
-          break;
-        default:
-          setError(error.message);
-      }
-      console.error('Auth error:', error.code, error.message);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      onClose();
-    } catch (error) {
-      switch (error.code) {
-        case 'auth/popup-closed-by-user':
-          setError('Sign-in cancelled.');
-          break;
-        case 'auth/popup-blocked':
-          setError('Popup was blocked by the browser. Please allow popups and try again.');
-          break;
-        default:
-          setError('An error occurred during Google sign-in.');
-          console.error('Google sign-in error:', error);
-      }
+      console.error('Auth error:', error);
+      setError(error.message);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg max-w-md w-full relative">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">{isSignUp ? 'Sign Up' : 'Login'}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
-        </div>
-        
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full relative">
         <button
-          onClick={handleGoogleSignIn}
-          className="w-full mb-4 p-2 border rounded flex items-center justify-center gap-2 hover:bg-gray-50"
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
         >
-          <img 
-            src="https://www.google.com/favicon.ico" 
-            alt="Google" 
-            className="w-5 h-5"
-          />
-          Continue with Google
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
 
-        <div className="relative mb-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+        <h2 className="text-2xl font-semibold mb-6">
+          {mode === 'signup' ? 'Create Account' : 'Sign In'}
+        </h2>
+
+        {error && (
+          <div className="mb-4 text-red-500 text-sm">
+            {error}
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with email</span>
-          </div>
-        </div>
+        )}
 
         <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full mb-4 p-2 border rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full mb-4 p-2 border rounded"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded mb-4"
-          >
-            {isSignUp ? 'Sign Up' : 'Login'}
-          </button>
-        </form>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
+          </div>
 
-        <button
-          onClick={() => setIsSignUp(!isSignUp)}
-          className="w-full text-blue-500"
-        >
-          {isSignUp ? 'Already have an account? Login' : 'Need an account? Sign Up'}
-        </button>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              {mode === 'signup' ? 'Sign Up' : 'Login'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+              className="text-blue-500 hover:text-blue-700"
+            >
+              {mode === 'login' ? 'Don\'t have an account? Sign Up' : 'Already have an account? Login'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { getAuth } from 'firebase/auth';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -135,7 +135,7 @@ function FileUpload({ onFileProcessed }) {
 
         {isLoading && (
           <div className="mt-4 p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+            <div className="h-[50px] w-[50px] mx-auto animate-spin rounded-full border-4 border-gray-300 border-t-black"></div>
             <p className="mt-2 text-gray-600">Analyzing your file...</p>
           </div>
         )}

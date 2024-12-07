@@ -10,9 +10,13 @@ import UserFiles from './components/UserFiles';
 import BoroughLogo from './assets/Borough-logo.svg';
 import ReportView from './components/ReportView';
 import ScrollToTop from './components/ScrollToTop';
-// import PaymentForm from './components/PaymentForm';
+import PaymentForm from './components/PaymentForm';
 import { motion } from "motion/react"
 import { Helmet } from 'react-helmet';
+import Footer from './components/Footer';
+import Terms from './components/Terms';
+import ReturnPage from './components/ReturnPage';
+import Account from './components/Account';
 
 
 const firebaseConfig = {
@@ -62,48 +66,52 @@ function App() {
 <meta name="apple-mobile-web-app-title" content="Borough" />
 <link rel="manifest" href="/site.webmanifest" />
       </Helmet>
-    <div className="min-h-screen" style={{ backgroundColor: '#85E5B5' }}>
-      <motion.div 
-      initial={{ 
-        y: 50, 
-        opacity: 0 }} 
-      animate={{ 
-        y: 0, 
-        opacity: 1, 
-        transition: { duration: 1, type: 'spring', stiffness: 100 }
-      }}  
-      className="mx-auto max-w-7xl px-4 py-8">
-        <div className="bg-white rounded-3xl p-8">
-          <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
-          {showAuth && <Auth onClose={() => setShowAuth(false)} />}
-          {/* {showPayment && <PaymentForm onClose={() => setShowPayment(false)} />} */}
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={
-              <div className="flex flex-col items-center min-h-[80vh]">
-                <div className="container mx-auto max-w-3xl text-center">
-                  {!user && <img src={BoroughLogo} alt="Borough" className="mx-auto mb-4 h-24 mt-40" />}
-                  {!user && <p className="text-xl text-gray-600 mb-16">Analyze your Home Inspection Report in Seconds</p>}
-                  
-                  {!user && 
-                  
-                  <button
-                  onClick={() => setShowPayment(true)}
-                  className="bg-blue-500 text-white py-4 px-8 rounded-full mb-4"
-                  >
-                    Get Started
-                  </button>
-                  }
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#85E5B5' }}>
+      <div className="mx-auto w-[1250px] px-4 py-8 flex-grow">
+        <motion.div 
+          initial={{ y: 50, opacity: 0 }} 
+          animate={{ 
+            y: 0, 
+            opacity: 1, 
+            transition: { duration: 1, type: 'spring', stiffness: 100 }
+          }}  
+        >
+          <div className="bg-white rounded-3xl p-8">
+            <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
+            {showAuth && <Auth onClose={() => setShowAuth(false)} />}
+            {showPayment && <PaymentForm onClose={() => setShowPayment(false)} />}
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={
+                <div className="flex flex-col items-center min-h-[80vh]">
+                  <div className="container mx-auto max-w-3xl text-center">
+                    {!user && <img src={BoroughLogo} alt="Borough" className="mx-auto mb-4 h-24 mt-40" />}
+                    {!user && <p className="text-xl text-gray-600 mb-16">Analyze your Home Inspection Report in Seconds</p>}
+                    
+                    {!user && 
+                    
+                    <button
+                    onClick={() => setShowPayment(true)}
+                    className="bg-blue-500 text-white py-4 px-8 rounded-full mb-4"
+                    >
+                      Get Started
+                    </button>
+                    }
 
-                  {user && <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />}
-                  {user && <UserFiles ref={userFilesRef} />}
+                    {user && <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />}
+                    {user && <UserFiles ref={userFilesRef} />}
+                  </div>
                 </div>
-              </div>
-            } />
-            <Route path="/files/:fileId" element={<ReportView />} />
-          </Routes>
-        </div>
-      </motion.div>
+              } />
+              <Route path="/files/:fileId" element={<ReportView />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/return" element={<ReturnPage />} />
+              <Route path="/account" element={<Account />} />
+            </Routes>
+          </div>
+        </motion.div>
+      </div>
+      <Footer />
     </div>
   </>
   )

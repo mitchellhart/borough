@@ -10,6 +10,7 @@ const fs = require('fs');
 const { PdfReader } = require('pdfreader');
 const OpenAI = require('openai');
 const { type } = require('os');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const uploadsDir = 'uploads';
 if (!fs.existsSync(uploadsDir)){
@@ -150,6 +151,19 @@ pool.query(`
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `).catch(err => console.error('Error creating file_analyses table:', err));
+
+// Add this near your other CREATE TABLE queries
+pool.query(`
+  CREATE TABLE IF NOT EXISTS subscriptions (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL UNIQUE,
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
+    status TEXT NOT NULL,
+    current_period_end TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`).catch(err => console.error('Error creating subscriptions table:', err));
 
 // File upload endpoint with database integration
 app.post('/api/files', authenticateUser, upload.single('file'), async (req, res) => {
@@ -551,4 +565,162 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
   }
 });
 
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    // Get user ID if authenticated
+    let userId = null;
+    if (req.headers.authorization) {
+      try {
+        const token = req.headers.authorization.split('Bearer ')[1];
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        userId = decodedToken.uid;
+        console.log('Creating checkout session for user:', userId);
+      } catch (error) {
+        console.log('No valid auth token provided - proceeding as guest checkout');
+      }
+    }
 
+    const session = await stripe.checkout.sessions.create({
+      ui_mode: 'embedded',
+      line_items: [
+        {
+          price: process.env.STRIPE_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+      automatic_tax: { enabled: true },
+      metadata: {
+        user_id: userId
+      }
+    });
+
+    console.log('Checkout session created:', {
+      sessionId: session.id,
+      userId: userId,
+      metadata: session.metadata
+    });
+
+    res.json({ clientSecret: session.client_secret });
+  } catch (error) {
+    console.error('Stripe session creation error:', error);
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+app.get('/api/session-status', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    res.json({
+      status: session.status,
+      customer_email: session.customer_details?.email
+    });
+  } catch (error) {
+    console.error('Stripe session status error:', error);
+    res.status(500).json({ error: 'Failed to get session status' });
+  }
+});
+
+// IMPORTANT: This middleware needs to be before any other route definitions
+// that use express.json() middleware
+app.post('/api/webhook', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    console.log('Received webhook request');
+    console.log('Stripe signature:', sig);
+    
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+    
+    console.log('Webhook event type:', event.type);
+    console.log('Event data:', JSON.stringify(event.data, null, 2));
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      console.log('Checkout session completed:', {
+        sessionId: session.id,
+        customerId: session.customer,
+        subscriptionId: session.subscription,
+        userId: session.metadata?.user_id
+      });
+
+      // Add this check
+      if (!session.metadata?.user_id) {
+        console.error('No user_id in session metadata!');
+      }
+
+      try {
+        const result = await pool.query(
+          `INSERT INTO subscriptions (
+            user_id,
+            stripe_customer_id,
+            stripe_subscription_id,
+            status,
+            current_period_end
+          ) VALUES ($1, $2, $3, $4, $5)
+          ON CONFLICT (user_id) 
+          DO UPDATE SET 
+            stripe_customer_id = EXCLUDED.stripe_customer_id,
+            stripe_subscription_id = EXCLUDED.stripe_subscription_id,
+            status = EXCLUDED.status,
+            current_period_end = EXCLUDED.current_period_end
+          RETURNING *`,
+          [
+            session.metadata.user_id,
+            session.customer,
+            session.subscription,
+            'active',
+            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          ]
+        );
+        console.log('Subscription stored in database:', result.rows[0]);
+      } catch (error) {
+        console.error('Database error:', error);
+      }
+    }
+
+    res.json({received: true});
+  } catch (err) {
+    console.error('Webhook Error:', err.message);
+    if (err.message.includes('No signatures found')) {
+      console.error('STRIPE_WEBHOOK_SECRET might be incorrect');
+    }
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+});
+
+// IMPORTANT: Make sure your general JSON middleware comes AFTER the webhook route
+app.use(express.json());
+
+app.get('/api/subscription-status', authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    console.log('Checking subscription status for user:', userId);
+    
+    const result = await pool.query(
+      'SELECT * FROM subscriptions WHERE user_id = $1',
+      [userId]
+    );
+
+    console.log('Subscription query result:', result.rows);
+
+    if (result.rows.length === 0) {
+      console.log('No subscription found for user:', userId);
+      return res.json({ status: 'inactive' });
+    }
+
+    res.json({
+      status: result.rows[0].status,
+      currentPeriodEnd: result.rows[0].current_period_end
+    });
+  } catch (error) {
+    console.error('Error fetching subscription status:', error);
+    res.status(500).json({ error: 'Failed to fetch subscription status' });
+  }
+});
