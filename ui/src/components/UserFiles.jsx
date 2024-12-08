@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { Menu } from '@headlessui/react';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 const UserFiles = forwardRef((props, ref) => {
 const navigate = useNavigate();
@@ -124,13 +124,56 @@ const navigate = useNavigate();
     });
   };
 
+  const MoreOptionsDropdown = ({ fileId }) => (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full">
+          <svg
+            className="w-5 h-5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+          </svg>
+        </button>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content 
+          className="min-w-[180px] bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 p-1 z-50"
+          sideOffset={5}
+        >
+          <DropdownMenu.Item 
+            className="text-red-500 hover:text-red-600 hover:bg-gray-100 flex items-center px-4 py-2 text-sm rounded cursor-pointer outline-none"
+            onClick={() => handleDelete(fileId)}
+          >
+            <svg 
+              className="w-4 h-4 mr-2" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+              />
+            </svg>
+            Delete
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Property Reports</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Your Reports</h2>
       
       {userFiles.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No files uploaded yet</p>
+          <p className="text-gray-500">No reports uploaded yet</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -201,47 +244,7 @@ const navigate = useNavigate();
                     View
                   </button>
                   
-                  <Menu as="div" className="relative inline-block text-left">
-                    <Menu.Button className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full">
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                      </svg>
-                    </Menu.Button>
-
-                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                      <div className="py-1">
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={() => handleDelete(file.id)}
-                              className={`${
-                                active ? 'bg-gray-100 text-red-600' : 'text-red-500'
-                              } flex w-full items-center px-4 py-2 text-sm`}
-                            >
-                              <svg 
-                                className="w-4 h-4 mr-2" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24"
-                              >
-                                <path 
-                                  strokeLinecap="round" 
-                                  strokeLinejoin="round" 
-                                  strokeWidth={2} 
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
-                                />
-                              </svg>
-                              Delete
-                            </button>
-                          )}
-                        </Menu.Item>
-                      </div>
-                    </Menu.Items>
-                  </Menu>
+                  <MoreOptionsDropdown fileId={file.id} />
                 </div>
               </div>
             </div>

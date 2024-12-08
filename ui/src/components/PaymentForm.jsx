@@ -1,17 +1,27 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { getAuth } from 'firebase/auth';
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout
 } from '@stripe/react-stripe-js';
+import BoroughLogo from '../assets/Borough-logo.svg';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 function PaymentForm({ onClose }) {
+  useEffect(() => {
+    // Prevent scrolling on mount
+    document.body.style.overflow = 'hidden';
+    
+    // Re-enable scrolling on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const fetchClientSecret = useCallback(async () => {
     try {
-      // Get the current user's token if they're logged in
       const auth = getAuth();
       const user = auth.currentUser;
       
@@ -19,7 +29,6 @@ function PaymentForm({ onClose }) {
         'Content-Type': 'application/json'
       };
 
-      // Only add authorization if user is logged in
       if (user) {
         const token = await user.getIdToken();
         headers['Authorization'] = `Bearer ${token}`;
@@ -51,36 +60,49 @@ function PaymentForm({ onClose }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col relative">
-        {/* Close button */}
-        <div className="absolute top-4 right-4 z-10">
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="fixed inset-0 flex">
+      {/* Left Panel - Product Info */}
+      <div className="w-1/2 bg-[#85E5B5] p-12 flex flex-col">
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+          <img src={BoroughLogo} alt="Borough" className="h-24 mb-8" />
+          <h1 className="text-4xl font-nohemi text-gray-800 mb-6">
+            Analyze Your Home Inspection Report
+          </h1>
+          <div className="space-y-6 text-lg text-gray-700 max-w-md">
+            <p>✓ Instant AI Analysis</p>
+            <p>✓ Detailed Cost Estimates</p>
+            <p>✓ Priority Rankings</p>
+            <p>✓ Interactive Report Dashboard</p>
+          </div>
         </div>
+        <button
+          onClick={onClose}
+          className="absolute top-4 left-4 text-gray-600 hover:text-gray-800"
+        >
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-2xl font-semibold text-gray-800">Complete Your Purchase</h2>
+      {/* Right Panel - Checkout Form */}
+      <div className="w-1/2 bg-white overflow-hidden flex flex-col">
+        <div className="p-8 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-2xl font-semibold text-gray-800">Subscribe to Borough</h2>
         </div>
         
-        {/* Checkout Form */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <EmbeddedCheckoutProvider
-            stripe={stripePromise}
-            options={{ fetchClientSecret }}
-          >
-            <EmbeddedCheckout 
-              className="min-h-[500px]"
-              onLoadError={(error) => console.error('Checkout load error:', error)}
-            />
-          </EmbeddedCheckoutProvider>
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-8 h-full">
+            <EmbeddedCheckoutProvider
+              stripe={stripePromise}
+              options={{ fetchClientSecret }}
+            >
+              <EmbeddedCheckout 
+                className="h-full"
+                onLoadError={(error) => console.error('Checkout load error:', error)}
+              />
+            </EmbeddedCheckoutProvider>
+          </div>
         </div>
       </div>
     </div>

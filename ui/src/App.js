@@ -78,7 +78,12 @@ function App() {
         >
           <div className="bg-white rounded-3xl p-8">
             <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
-            {showAuth && <Auth onClose={() => setShowAuth(false)} />}
+            {showAuth && (
+              <Auth 
+                onClose={() => setShowAuth(false)} 
+                onGetStarted={() => setShowPayment(true)}
+              />
+            )}
             {showPayment && <PaymentForm onClose={() => setShowPayment(false)} />}
             <ScrollToTop />
             <Routes>

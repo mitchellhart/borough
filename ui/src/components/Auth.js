@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
-function Auth({ onClose, initialMode = 'login', onAuthSuccess }) {
+function Auth({ onClose, initialMode = 'login', onAuthSuccess, onGetStarted }) {
   // Use initialMode prop to set the default mode
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const emailRef = useRef();
+  const passwordRef = useRef();
   
   const auth = getAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,8 +44,8 @@ function Auth({ onClose, initialMode = 'login', onAuthSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-md w-full relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -95,13 +100,32 @@ function Auth({ onClose, initialMode = 'login', onAuthSuccess }) {
               {mode === 'signup' ? 'Sign Up' : 'Login'}
             </button>
 
-            <button
-              type="button"
-              onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-              className="text-blue-500 hover:text-blue-700"
-            >
-              {mode === 'login' ? 'Don\'t have an account? Sign Up' : 'Already have an account? Login'}
-            </button>
+            <div className="mt-4 text-center">
+              {mode === 'login' ? (
+                <p className="text-sm text-gray-600">
+                  Don't have an account?{' '}
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onGetStarted();
+                    }}
+                    className="text-blue-500 hover:text-blue-600 font-medium"
+                  >
+                    Get Started
+                  </button>
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  Already have an account?{' '}
+                  <button
+                    onClick={() => setMode('login')}
+                    className="text-blue-500 hover:text-blue-600 font-medium"
+                  >
+                    Log In
+                  </button>
+                </p>
+              )}
+            </div>
           </div>
         </form>
       </div>

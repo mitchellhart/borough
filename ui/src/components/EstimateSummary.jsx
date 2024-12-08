@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -43,24 +43,45 @@ function useCountUp(end, duration = 1000) {
 }
 
 function EstimateSummary(props) {
-  const { address, date, inspector, license, estimate, summary } = props;
+  const { 
+    address, 
+    date, 
+    inspector, 
+    license, 
+    estimate, 
+    summary,
+    findings
+  } = props;
   const [urgencyLevel, setUrgencyLevel] = useState('Necessary');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const categories = [
-    { name: 'Plumbing', cost: 2100 },
-    { name: 'Electric', cost: 1800 },
-    { name: 'Roofing', cost: 1100 },
-    { name: 'Mason', cost: 200 },
-    { name: 'HVAC', cost: 1900 },
-    { name: 'Drywall', cost: 200 },
-    { name: 'Gutters', cost: 400 },
-    { name: 'Windows', cost: 1000 },
-    { name: 'Appliance', cost: 200 },
-  ];
+  // Calculate categories from findings data
+  const categories = useMemo(() => {
+    if (!findings) return [];
+    
+    // Create a map to aggregate costs by category
+    const categoryMap = findings.reduce((acc, finding) => {
+      const category = finding.category;
+      let cost = 0;
+      
+      // Convert estimate to number, handling different formats
+      if (typeof finding.estimate === 'number') {
+        cost = finding.estimate;
+      } else if (finding.estimate && finding.estimate !== 'Variable') {
+        cost = parseFloat(finding.estimate.toString().replace(/[$,]/g, '')) || 0;
+      }
+      
+      if (!acc[category]) {
+        acc[category] = { name: category, cost: 0 };
+      }
+      acc[category].cost += cost;
+      return acc;
+    }, {});
+    
+    // Convert map to array and sort by cost
+    return Object.values(categoryMap).sort((a, b) => b.cost - a.cost);
+  }, [findings]);
 
-  // const totalEstimate = categories.reduce((sum, cat) => sum + cat.cost, 0);
-  
   const animatedTotal = useCountUp(estimate, 2000);
 
   const chartData = {
@@ -115,7 +136,7 @@ function EstimateSummary(props) {
           </div>
           <div className="text-right">
             <h2 className="text-lg font-medium text-gray-600 mb-2">
-              Estimate
+              Total Estimate
             </h2>
             <div className="text-8xl font-bold font-nohemi">${animatedTotal.toLocaleString()}</div>
           </div>
@@ -150,7 +171,7 @@ function EstimateSummary(props) {
           </div>
         )}
 
-        <hr className="border-gray-200 mb-8" />
+        <hr className="border-gray-200 my-20" />
 
         <div className="flex justify-between items-start mb-8">
           <div className="max-w-2xl">
@@ -160,40 +181,11 @@ function EstimateSummary(props) {
             </p>
           </div>
 
-          <div className="relative">
-            <label className="block text-sm text-gray-600 mb-2">
-              Urgency Level
-            </label>
-            <select
-              value={urgencyLevel}
-              onChange={(e) => setUrgencyLevel(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 leading-tight focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            >
-              <option>Critical</option>
-              <option>Necessary</option>
-              <option>Recommended</option>
-              <option>Optional</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 top-6 flex items-center px-2 text-gray-700">
-              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-              </svg>
-            </div>
-          </div>
+          
         </div>
 
         <div className="h-96 w-full mb-12">
           <Bar data={chartData} options={chartOptions} />
-        </div>
-
-        <div className="mt-8 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-9 gap-4">
-          {categories.map((cat) => (
-            <div key={cat.name} className="text-center">
-              <div className="font-medium">{cat.name}</div>
-              <div className="text-gray-600">${cat.cost}</div>
-            </div>
-          ))}
-
         </div>
         
       </div>
