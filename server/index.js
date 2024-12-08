@@ -11,6 +11,7 @@ const { PdfReader } = require('pdfreader');
 const OpenAI = require('openai');
 const { type } = require('os');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripeRoutes = require('./routes/stripe');
 
 const uploadsDir = 'uploads';
 if (!fs.existsSync(uploadsDir)){
@@ -580,6 +581,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
       }
     }
 
+    app.use('/api', stripeRoutes);
+    
     const session = await stripe.checkout.sessions.create({
       ui_mode: 'embedded',
       line_items: [
