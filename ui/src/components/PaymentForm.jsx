@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { getAuth } from 'firebase/auth';
 import {
@@ -6,32 +6,47 @@ import {
   EmbeddedCheckout
 } from '@stripe/react-stripe-js';
 import BoroughLogo from '../assets/Borough-logo.svg';
+import Auth from './Auth';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 function PaymentForm({ onClose }) {
-  useEffect(() => {
-    // Verify Stripe key is available
-    if (!process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY) {
-      console.error('Missing Stripe publishable key in environment');
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showAuth, setShowAuth] = useState(true);
+  const [clientSecret, setClientSecret] = useState(null);
+  
+  const fetchClientSecret = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await getAuth().currentUser.getIdToken()}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.clientSecret;
+    } catch (error) {
+      console.error('fetchClientSecret error:', error);
+      throw error;
     }
-    
-    // Log the API URL being used (but not the key itself)
-    console.log('API URL:', process.env.REACT_APP_API_URL || 'Not set');
   }, []);
 
   useEffect(() => {
-    // Prevent scrolling on mount with passive event listeners
     const preventDefault = (e) => {
       e.preventDefault();
     };
 
-    // Add passive event listeners where possible
     document.body.style.overflow = 'hidden';
     document.addEventListener('touchmove', preventDefault, { passive: false });
     document.addEventListener('wheel', preventDefault, { passive: false });
 
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = 'unset';
       document.removeEventListener('touchmove', preventDefault);
@@ -39,49 +54,11 @@ function PaymentForm({ onClose }) {
     };
   }, []);
 
-  const fetchClientSecret = useCallback(async () => {
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-
-      // Only add auth header if user is logged in
-      if (user) {
-        const token = await user.getIdToken();
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || ''}/api/create-checkout-session`,
-        {
-          method: "POST",
-          headers,
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Checkout session error:', errorData);
-        throw new Error(errorData.error || 'Failed to create checkout session');
-      }
-
-      const data = await response.json();
-      console.log('Checkout session response:', data);
-
-      if (!data.clientSecret) {
-        throw new Error('No client secret received');
-      }
-
-      return data.clientSecret;
-    } catch (error) {
-      console.error('fetchClientSecret error:', error);
-      throw error;
-    }
-  }, []);
+  const handleAuthSuccess = () => {
+    console.log('Auth success, showing checkout');
+    setShowAuth(false);
+    setShowCheckout(true);
+  };
 
   return (
     <div className="fixed inset-0 flex">
@@ -109,24 +86,35 @@ function PaymentForm({ onClose }) {
         </button>
       </div>
 
-      {/* Right Panel - Checkout Form */}
+      {/* Right Panel */}
       <div className="w-1/2 bg-white overflow-hidden flex flex-col">
         <div className="p-8 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-2xl font-semibold text-gray-800">Subscribe to Borough</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">
+            {showCheckout ? 'Subscribe to Borough' : 'Create Your Account'}
+          </h2>
         </div>
         
         <div className="flex-1 overflow-y-auto">
-          <div className="p-8 h-full">
-            <EmbeddedCheckoutProvider
-              stripe={stripePromise}
-              options={{ fetchClientSecret }}
-            >
-              <EmbeddedCheckout 
-                className="h-full"
-                onLoadError={(error) => console.error('Checkout load error:', error)}
-              />
-            </EmbeddedCheckoutProvider>
-          </div>
+          {showAuth && (
+            <Auth 
+              initialMode="signup"
+              onClose={() => onClose()}
+              onAuthSuccess={handleAuthSuccess}
+            />
+          )}
+          {showCheckout && (
+            <div className="p-8 h-full">
+              <EmbeddedCheckoutProvider
+                stripe={stripePromise}
+                options={{ fetchClientSecret }}
+              >
+                <EmbeddedCheckout 
+                  className="h-full"
+                  onLoadError={(error) => console.error('Checkout load error:', error)}
+                />
+              </EmbeddedCheckoutProvider>
+            </div>
+          )}
         </div>
       </div>
     </div>

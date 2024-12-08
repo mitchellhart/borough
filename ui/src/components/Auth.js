@@ -2,10 +2,10 @@ import React, { useState, useRef } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
-function Auth({ onClose, initialMode = 'login', onAuthSuccess, onGetStarted }) {
+function Auth({ onClose, initialMode = 'login', initialEmail = '', onAuthSuccess }) {
   // Use initialMode prop to set the default mode
   const [mode, setMode] = useState(initialMode);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,28 +18,59 @@ function Auth({ onClose, initialMode = 'login', onAuthSuccess, onGetStarted }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
     try {
+      console.log('Starting authentication...');
+      let userCredential;
       if (mode === 'signup') {
-        await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        console.log('Signup successful:', userCredential);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('Login successful:', userCredential);
       }
+      
+      const idToken = await userCredential.user.getIdToken();
+      console.log('Got ID token, making request to /api/link-auth');
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/link-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ 
+          email: email,
+          authId: userCredential.user.uid 
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error from /api/link-auth:', errorData);
+        throw new Error(errorData.error || 'Failed to link auth');
+      }
+
+      const data = await response.json();
+      console.log('Link auth response:', data);
       
       // Clear form
       setEmail('');
       setPassword('');
+      setLoading(false);
       
-      // Call onAuthSuccess if provided
+      // Instead of navigating, just call onAuthSuccess
+      // This will trigger the PaymentForm to show the checkout
       if (onAuthSuccess) {
+        console.log('Calling onAuthSuccess');
         onAuthSuccess();
       }
       
-      // Close the modal
-      onClose();
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.message);
+      setLoading(false);
     }
   };
 
@@ -76,6 +107,7 @@ function Auth({ onClose, initialMode = 'login', onAuthSuccess, onGetStarted }) {
               onChange={(e) => setEmail(e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               required
+              disabled={initialEmail !== ''}
             />
           </div>
 
@@ -107,7 +139,7 @@ function Auth({ onClose, initialMode = 'login', onAuthSuccess, onGetStarted }) {
                   <button
                     onClick={() => {
                       onClose();
-                      onGetStarted();
+                      onAuthSuccess();
                     }}
                     className="text-blue-500 hover:text-blue-600 font-medium"
                   >

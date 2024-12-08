@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import Auth from './Auth';
 
 function ReturnPage() {
   const [searchParams] = useSearchParams();
@@ -26,7 +25,6 @@ function ReturnPage() {
           const text = await res.text();
           console.log('Raw response:', text);
           
-          // Only try to parse if it looks like JSON
           if (text.trim().startsWith('{')) {
             try {
               const data = JSON.parse(text);
@@ -65,15 +63,18 @@ function ReturnPage() {
         
         {status === 'success' && (
           <div>
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold text-green-600 mb-4">Payment Successful!</h2>
-              <p>Thank you for your purchase. Let's set up your account to get started.</p>
-            </div>
-            
-            <Auth 
-              initialMode="signup"
-              onAuthSuccess={() => navigate('/')}
-            />
+            <h2 className="text-2xl font-semibold text-green-600 mb-4">
+              Congratulations, you are now subscribed to Borough!
+            </h2>
+            <p className="mb-8 text-gray-600">
+              You can now start analyzing your home inspection reports.
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition-colors"
+            >
+              Get Started
+            </button>
           </div>
         )}
         

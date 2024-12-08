@@ -11,7 +11,6 @@ const { PdfReader } = require('pdfreader');
 const OpenAI = require('openai');
 const { type } = require('os');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const stripeRoutes = require('./routes/stripe');
 
 const uploadsDir = 'uploads';
 if (!fs.existsSync(uploadsDir)){
@@ -65,24 +64,15 @@ const bucket = getStorage().bucket();
 
 const app = express();
 
-// Add your middleware
+// FIRST: Set up CORS middleware before any routes
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://borough-ai.com', 'https://borough-ai.onrender.com']
     : 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Initialize PostgreSQL connection pool
-const pool = new Pool({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DB,
-  password: process.env.POSTGRES_PASSWORD,
-  port: process.env.POSTGRES_PORT || 5432,
-});
 
 // Define authentication middleware
 const authenticateUser = async (req, res, next) => {
@@ -101,6 +91,35 @@ const authenticateUser = async (req, res, next) => {
     res.status(401).json({ error: 'Unauthorized' });
   }
 };
+
+// THEN: Mount Stripe routes (including webhook) BEFORE body parsing
+const stripeRoutes = require('./routes/stripe')(authenticateUser);
+app.use('/api', stripeRoutes);
+
+// AFTER: Add body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+
+// Initialize routes with middleware
+const webhookRoutes = require('./routes/webhook');
+
+// Mount routes
+app.use('/api/webhook', webhookRoutes);
+
+// THEN: Add your other middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Initialize PostgreSQL connection pool
+const pool = new Pool({
+  user: process.env.POSTGRES_USER,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  port: process.env.POSTGRES_PORT || 5432,
+});
 
 // NOW initialize and use the files router (after pool and auth are defined)
 const filesRouter = require('./routes/files')(pool, authenticateUser);
@@ -165,6 +184,126 @@ pool.query(`
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `).catch(err => console.error('Error creating subscriptions table:', err));
+
+// First check if the table exists
+pool.query(`
+  SELECT EXISTS (
+    SELECT FROM information_schema.tables 
+    WHERE table_schema = 'public' 
+    AND table_name = 'users'
+  )
+`).then(result => {
+  console.log('Users table exists:', result.rows[0].exists);
+  
+  // If table exists, let's also check its structure
+  if (result.rows[0].exists) {
+    return pool.query(`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'users'
+    `);
+  }
+}).then(result => {
+  if (result) {
+    console.log('Users table columns:', result.rows);
+  }
+}).catch(err => console.error('Error checking users table:', err));
+
+// Create table only if it doesn't exist
+pool.query(`
+  CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    auth_id TEXT UNIQUE,
+    subscription_status TEXT DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- Add trigger to automatically update updated_at
+  CREATE OR REPLACE FUNCTION update_updated_at_column()
+  RETURNS TRIGGER AS $$
+  BEGIN
+      NEW.updated_at = CURRENT_TIMESTAMP;
+      RETURN NEW;
+  END;
+  $$ language 'plpgsql';
+
+  DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+  
+  CREATE TRIGGER update_users_updated_at
+      BEFORE UPDATE ON users
+      FOR EACH ROW
+      EXECUTE FUNCTION update_updated_at_column();
+`).then(() => {
+  console.log('Users table setup completed');
+}).catch(err => console.error('Error setting up users table:', err));
+
+// Add the email saving endpoint
+app.post('/api/save-email', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    console.log('Received email save request:', { email });
+
+    // Basic email validation
+    if (!email || !email.includes('@')) {
+      console.log('Invalid email format:', { email });
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    // Log the query we're about to execute
+    console.log('Executing query with email:', email);
+
+    // Save to users table, explicitly specifying the email column in ON CONFLICT
+    const result = await pool.query(
+      `INSERT INTO users (email)
+       VALUES ($1)
+       ON CONFLICT (email) DO UPDATE
+       SET updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [email]
+    );
+
+    console.log('Query result:', result.rows[0]);
+
+    res.status(201).json({
+      message: 'Email saved successfully',
+      email: result.rows[0].email
+    });
+
+  } catch (error) {
+    // Enhanced error logging
+    console.error('Error saving email:', {
+      error: error.message,
+      stack: error.stack,
+      email: req.body.email
+    });
+    
+    // Send more specific error message
+    res.status(500).json({ 
+      error: 'Failed to save email',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Update your authentication middleware to link the auth_id when they sign up
+// This could go in your auth routes or where you handle user creation
+const linkUserAuth = async (email, authId) => {
+  try {
+    await pool.query(
+      `UPDATE users 
+       SET auth_id = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE email = $2`,
+      [authId, email]
+    );
+  } catch (error) {
+    console.error('Error linking auth:', error);
+    throw error;
+  }
+};
 
 // File upload endpoint with database integration
 app.post('/api/files', authenticateUser, upload.single('file'), async (req, res) => {
@@ -289,9 +428,6 @@ app.get('/api/files', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch files' });
   }
 });
-
-// FIRST: Mount all API routes
-app.use('/api', stripeRoutes);
 
 // THEN: Add the session status endpoint specifically
 app.get('/api/session-status', async (req, res) => {
@@ -612,78 +748,82 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
   }
 });
 
-// IMPORTANT: This middleware needs to be before any other route definitions
-// that use express.json() middleware
-app.post('/api/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
+// Regular routes with JSON parsing
+app.use(express.json());
 
+
+
+// IMPORTANT: Move this AFTER the webhook route
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Helper function to update user subscription
+async function updateUserSubscription(email) {
   try {
-    console.log('Received webhook request');
-    console.log('Stripe signature:', sig);
+    console.log('Attempting to update subscription for email:', email);
     
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
+    const result = await pool.query(
+      `UPDATE users 
+       SET subscription_status = $1, 
+           updated_at = CURRENT_TIMESTAMP 
+       WHERE email = $2 
+       RETURNING *`,
+      ['active', email]
     );
+
+    if (result.rows.length > 0) {
+      console.log('Successfully updated subscription:', result.rows[0]);
+    } else {
+      console.log('No user found with email:', email);
+    }
+  } catch (error) {
+    console.error('Database error:', error);
+    throw error;
+  }
+}
+
+// Update your authentication middleware to save user data
+app.post('/api/link-auth', authenticateUser, async (req, res) => {
+  try {
+    const { email, authId } = req.body;
+    console.log('Received link-auth request:', { email, authId }); // Debug log
     
-    console.log('Webhook event type:', event.type);
-    console.log('Event data:', JSON.stringify(event.data, null, 2));
-
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      console.log('Checkout session completed:', {
-        sessionId: session.id,
-        customerId: session.customer,
-        subscriptionId: session.subscription,
-        userId: session.metadata?.user_id
-      });
-
-      // Add this check
-      if (!session.metadata?.user_id) {
-        console.error('No user_id in session metadata!');
-      }
-
-      try {
-        const result = await pool.query(
-          `INSERT INTO subscriptions (
-            user_id,
-            stripe_customer_id,
-            stripe_subscription_id,
-            status,
-            current_period_end
-          ) VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT (user_id) 
-          DO UPDATE SET 
-            stripe_customer_id = EXCLUDED.stripe_customer_id,
-            stripe_subscription_id = EXCLUDED.stripe_subscription_id,
-            status = EXCLUDED.status,
-            current_period_end = EXCLUDED.current_period_end
-          RETURNING *`,
-          [
-            session.metadata.user_id,
-            session.customer,
-            session.subscription,
-            'active',
-            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          ]
-        );
-        console.log('Subscription stored in database:', result.rows[0]);
-      } catch (error) {
-        console.error('Database error:', error);
-      }
+    // Verify that the authId matches the authenticated user
+    if (req.user.uid !== authId) {
+      console.log('Auth mismatch:', { 
+        requestAuthId: authId, 
+        userUid: req.user.uid 
+      }); // Debug log
+      return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    res.json({received: true});
-  } catch (err) {
-    console.error('Webhook Error:', err.message);
-    if (err.message.includes('No signatures found')) {
-      console.error('STRIPE_WEBHOOK_SECRET might be incorrect');
-    }
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.log('Executing database query...'); // Debug log
+
+    // Insert or update user in database with subscription status
+    const result = await pool.query(
+      `INSERT INTO users (email, auth_id, subscription_status)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (email) 
+       DO UPDATE SET 
+         auth_id = EXCLUDED.auth_id,
+         subscription_status = EXCLUDED.subscription_status,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [email, authId, 'pending']
+    );
+
+    console.log('Database query result:', result.rows[0]); // Debug log
+    
+    res.json({ 
+      message: 'Auth linked successfully',
+      user: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error linking auth:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
+    res.status(500).json({ error: 'Failed to link auth', details: error.message });
   }
 });
-
-// IMPORTANT: Make sure your general JSON middleware comes AFTER the webhook route
-app.use(express.json());

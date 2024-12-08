@@ -112,6 +112,7 @@ function App() {
               <Route path="/terms" element={<Terms />} />
               <Route path="/return" element={<ReturnPage />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/payment" element={<PaymentForm />} />
             </Routes>
           </div>
         </motion.div>
