@@ -12,23 +12,30 @@ function ReturnPage() {
     console.log('Session ID:', sessionId);
     
     if (sessionId) {
-      fetch(`/api/session-status?session_id=${sessionId}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      fetch(`${apiUrl}/api/session-status?session_id=${sessionId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         }
       })
-        .then(res => {
+        .then(async res => {
           console.log('Response status:', res.status);
-          return res.json();
-        })
-        .then(data => {
-          console.log('Session status data:', data);
-          if (data.status === 'complete' || data.status === 'completed') {
-            setStatus('success');
-          } else {
+          const text = await res.text();
+          console.log('Raw response:', text);
+          
+          try {
+            const data = JSON.parse(text);
+            console.log('Session status data:', data);
+            if (data.status === 'complete' || data.status === 'completed') {
+              setStatus('success');
+            } else {
+              setStatus('failed');
+              console.log('Failed because status was:', data.status);
+            }
+          } catch (parseError) {
+            console.error('Error parsing JSON:', parseError);
             setStatus('failed');
-            console.log('Failed because status was:', data.status);
           }
         })
         .catch(error => {
