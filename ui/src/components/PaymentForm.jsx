@@ -11,6 +11,16 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 function PaymentForm({ onClose }) {
   useEffect(() => {
+    // Verify Stripe key is available
+    if (!process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY) {
+      console.error('Missing Stripe publishable key in environment');
+    }
+    
+    // Log the API URL being used (but not the key itself)
+    console.log('API URL:', process.env.REACT_APP_API_URL || 'Not set');
+  }, []);
+
+  useEffect(() => {
     // Prevent scrolling on mount
     document.body.style.overflow = 'hidden';
     
@@ -34,10 +44,17 @@ function PaymentForm({ onClose }) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers
-      });
+      console.log('Making request to:', `${process.env.REACT_APP_API_URL || ''}/api/create-checkout-session`);
+      console.log('Request headers:', Object.fromEntries(Object.entries(headers).filter(([key]) => key !== 'Authorization')));
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL || ''}/api/create-checkout-session`,
+        {
+          method: "POST",
+          headers,
+          credentials: 'include',
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
