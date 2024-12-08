@@ -307,11 +307,40 @@ app.get('/api/session-status', async (req, res) => {
   }
 });
 
-// LAST: Serve static files and handle React routing
+// Add this BEFORE the catch-all route
+app.get('/api/subscription-status', authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    
+    // Query the subscriptions table
+    const result = await pool.query(
+      'SELECT * FROM subscriptions WHERE user_id = $1',
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.json({ status: 'inactive' });
+    }
+
+    const subscription = result.rows[0];
+    
+    // Log the subscription data for debugging
+    console.log('Subscription found:', subscription);
+
+    res.json({
+      status: subscription.status,
+      currentPeriodEnd: subscription.current_period_end,
+      stripeSubscriptionId: subscription.stripe_subscription_id
+    });
+  } catch (error) {
+    console.error('Error fetching subscription status:', error);
+    res.status(500).json({ error: 'Failed to fetch subscription status' });
+  }
+});
+
+// THEN the catch-all route for React app
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('../ui/build'));
-  
-  // Handle React routing - this should be the LAST route
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../ui/build', 'index.html'));
   });
@@ -658,30 +687,3 @@ app.post('/api/webhook', express.raw({type: 'application/json'}), async (req, re
 
 // IMPORTANT: Make sure your general JSON middleware comes AFTER the webhook route
 app.use(express.json());
-
-app.get('/api/subscription-status', authenticateUser, async (req, res) => {
-  try {
-    const userId = req.user.uid;
-    console.log('Checking subscription status for user:', userId);
-    
-    const result = await pool.query(
-      'SELECT * FROM subscriptions WHERE user_id = $1',
-      [userId]
-    );
-
-    console.log('Subscription query result:', result.rows);
-
-    if (result.rows.length === 0) {
-      console.log('No subscription found for user:', userId);
-      return res.json({ status: 'inactive' });
-    }
-
-    res.json({
-      status: result.rows[0].status,
-      currentPeriodEnd: result.rows[0].current_period_end
-    });
-  } catch (error) {
-    console.error('Error fetching subscription status:', error);
-    res.status(500).json({ error: 'Failed to fetch subscription status' });
-  }
-});

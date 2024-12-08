@@ -17,18 +17,32 @@ function Account() {
           lastSignIn: new Date(currentUser.metadata.lastSignInTime).toLocaleDateString()
         });
 
-        // Fetch subscription status
+        // Fetch subscription status with full API URL
         try {
           const token = await currentUser.getIdToken();
-          const response = await fetch('/api/subscription-status', {
+          const apiUrl = process.env.REACT_APP_API_URL || '';
+          const response = await fetch(`${apiUrl}/api/subscription-status`, {
             headers: {
-              'Authorization': `Bearer ${token}`
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
             }
           });
-          const data = await response.json();
-          setSubscriptionStatus(data);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const text = await response.text();
+          try {
+            const data = JSON.parse(text);
+            setSubscriptionStatus(data);
+          } catch (parseError) {
+            console.error('Response was not JSON:', text.substring(0, 100));
+            throw new Error('Invalid JSON response');
+          }
         } catch (error) {
           console.error('Error fetching subscription:', error);
+          setSubscriptionStatus({ status: 'error', message: error.message });
         }
       } else {
         setUser(null);
