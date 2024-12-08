@@ -13,6 +13,8 @@ function ReturnPage() {
     
     if (sessionId) {
       const apiUrl = process.env.REACT_APP_API_URL || '';
+      console.log('Fetching session status from:', `${apiUrl}/api/session-status`);
+      
       fetch(`${apiUrl}/api/session-status?session_id=${sessionId}`, {
         method: 'GET',
         headers: {
@@ -24,17 +26,23 @@ function ReturnPage() {
           const text = await res.text();
           console.log('Raw response:', text);
           
-          try {
-            const data = JSON.parse(text);
-            console.log('Session status data:', data);
-            if (data.status === 'complete' || data.status === 'completed') {
-              setStatus('success');
-            } else {
+          // Only try to parse if it looks like JSON
+          if (text.trim().startsWith('{')) {
+            try {
+              const data = JSON.parse(text);
+              console.log('Session status data:', data);
+              if (data.status === 'complete' || data.status === 'completed') {
+                setStatus('success');
+              } else {
+                setStatus('failed');
+                console.log('Failed because status was:', data.status);
+              }
+            } catch (parseError) {
+              console.error('Error parsing JSON:', parseError);
               setStatus('failed');
-              console.log('Failed because status was:', data.status);
             }
-          } catch (parseError) {
-            console.error('Error parsing JSON:', parseError);
+          } else {
+            console.error('Received non-JSON response:', text.substring(0, 100));
             setStatus('failed');
           }
         })

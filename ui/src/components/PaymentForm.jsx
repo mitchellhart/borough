@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { getAuth } from 'firebase/auth';
 import {
@@ -10,8 +10,6 @@ import BoroughLogo from '../assets/Borough-logo.svg';
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 function PaymentForm({ onClose }) {
-  const [stripeBlocked, setStripeBlocked] = useState(false);
-
   useEffect(() => {
     // Verify Stripe key is available
     if (!process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY) {
@@ -39,37 +37,6 @@ function PaymentForm({ onClose }) {
       document.removeEventListener('touchmove', preventDefault);
       document.removeEventListener('wheel', preventDefault);
     };
-  }, []);
-
-  useEffect(() => {
-    // Check if Stripe is blocked
-    const testStripeConnection = async () => {
-      try {
-        // Test multiple Stripe endpoints
-        const endpoints = [
-          'https://js.stripe.com/v3/',
-          'https://api.stripe.com/v1/payment_pages'
-        ];
-
-        const results = await Promise.all(
-          endpoints.map(url => 
-            fetch(url)
-              .then(response => response.ok)
-              .catch(() => false)
-          )
-        );
-
-        if (results.some(result => !result)) {
-          setStripeBlocked(true);
-          console.warn('Some Stripe endpoints are blocked. Payment functionality may be limited.');
-        }
-      } catch (error) {
-        console.error('Stripe connection test error:', error);
-        setStripeBlocked(true);
-      }
-    };
-    
-    testStripeConnection();
   }, []);
 
   const fetchClientSecret = useCallback(async () => {
@@ -118,18 +85,6 @@ function PaymentForm({ onClose }) {
 
   return (
     <div className="fixed inset-0 flex">
-      {stripeBlocked && (
-        <div className="absolute top-0 left-0 right-0 bg-yellow-100 p-3 text-center text-yellow-800">
-          <p>
-            Please disable your ad blocker or privacy extensions to complete your purchase. 
-            <br />
-            <span className="text-sm">
-              We use Stripe for secure payment processing, but some security extensions may block it.
-            </span>
-          </p>
-        </div>
-      )}
-      
       {/* Left Panel - Product Info */}
       <div className="w-1/2 bg-[#85E5B5] p-12 flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center text-center">

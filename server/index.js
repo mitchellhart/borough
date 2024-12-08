@@ -290,11 +290,28 @@ app.get('/api/files', authenticateUser, async (req, res) => {
   }
 });
 
-// Move this AFTER all API routes but BEFORE the catch-all route
+// FIRST: Mount all API routes
+app.use('/api', stripeRoutes);
+
+// THEN: Add the session status endpoint specifically
+app.get('/api/session-status', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    res.json({
+      status: session.status,
+      customer_email: session.customer_details?.email
+    });
+  } catch (error) {
+    console.error('Stripe session status error:', error);
+    res.status(500).json({ error: 'Failed to get session status' });
+  }
+});
+
+// LAST: Serve static files and handle React routing
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('../ui/build'));
   
-  // Handle React routing
+  // Handle React routing - this should be the LAST route
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../ui/build', 'index.html'));
   });
@@ -563,21 +580,6 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
   } catch (error) {
     console.error('Error fetching analysis:', error);
     res.status(500).json({ error: 'Failed to fetch analysis' });
-  }
-});
-
-app.use('/api', stripeRoutes);
-
-app.get('/api/session-status', async (req, res) => {
-  try {
-    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-    res.json({
-      status: session.status,
-      customer_email: session.customer_details?.email
-    });
-  } catch (error) {
-    console.error('Stripe session status error:', error);
-    res.status(500).json({ error: 'Failed to get session status' });
   }
 });
 
