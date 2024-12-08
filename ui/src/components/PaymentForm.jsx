@@ -39,13 +39,11 @@ function PaymentForm({ onClose }) {
         'Content-Type': 'application/json'
       };
 
+      // Only add auth header if user is logged in
       if (user) {
         const token = await user.getIdToken();
         headers['Authorization'] = `Bearer ${token}`;
       }
-
-      console.log('Making request to:', `${process.env.REACT_APP_API_URL || ''}/api/create-checkout-session`);
-      console.log('Request headers:', Object.fromEntries(Object.entries(headers).filter(([key]) => key !== 'Authorization')));
 
       const response = await fetch(
         `${process.env.REACT_APP_API_URL || ''}/api/create-checkout-session`,

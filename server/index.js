@@ -566,51 +566,7 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
   }
 });
 
-app.post('/api/create-checkout-session', authenticateUser, async (req, res) => {
-  try {
-    // Get user ID if authenticated
-    let userId = null;
-    if (req.headers.authorization) {
-      try {
-        const token = req.headers.authorization.split('Bearer ')[1];
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        userId = decodedToken.uid;
-        console.log('Creating checkout session for user:', userId);
-      } catch (error) {
-        console.log('No valid auth token provided - proceeding as guest checkout');
-      }
-    }
-
-    app.use('/api', stripeRoutes);
-    
-    const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded',
-      line_items: [
-        {
-          price: process.env.STRIPE_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
-      automatic_tax: { enabled: true },
-      metadata: {
-        user_id: userId
-      }
-    });
-
-    console.log('Checkout session created:', {
-      sessionId: session.id,
-      userId: userId,
-      metadata: session.metadata
-    });
-
-    res.json({ clientSecret: session.client_secret });
-  } catch (error) {
-    console.error('Stripe session creation error:', error);
-    res.status(500).json({ error: 'Failed to create checkout session' });
-  }
-});
+app.use('/api', stripeRoutes);
 
 app.get('/api/session-status', async (req, res) => {
   try {

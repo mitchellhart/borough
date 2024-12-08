@@ -7,16 +7,16 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 router.post('/create-checkout-session', async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
+      ui_mode: 'embedded',
       line_items: [
         {
           price: process.env.STRIPE_PRICE_ID,
           quantity: 1,
         },
       ],
-      success_url: `${FRONTEND_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${FRONTEND_URL}/cancel`,
+      mode: 'subscription',
+      return_url: `${FRONTEND_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+      automatic_tax: { enabled: true }
     });
 
     res.json({ clientSecret: session.client_secret });
