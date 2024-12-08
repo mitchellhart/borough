@@ -566,7 +566,7 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
   }
 });
 
-app.post('/api/create-checkout-session', async (req, res) => {
+app.post('/api/create-checkout-session', authenticateUser, async (req, res) => {
   try {
     // Get user ID if authenticated
     let userId = null;

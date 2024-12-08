@@ -1,18 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { authenticateToken } = require('../middleware/auth');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-router.post('/create-checkout-session', authenticateToken, async (req, res) => {
+router.post('/create-checkout-session', async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID, // You'll need this in your env variables
+          price: process.env.STRIPE_PRICE_ID,
           quantity: 1,
         },
       ],
