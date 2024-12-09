@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
-function Auth({ onClose, initialMode = 'login', initialEmail = '', onAuthSuccess }) {
+function Auth({ onClose = () => {}, initialMode = 'login', initialEmail = '', onAuthSuccess }) {
   // Use initialMode prop to set the default mode
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState(initialEmail);
@@ -64,7 +64,7 @@ function Auth({ onClose, initialMode = 'login', initialEmail = '', onAuthSuccess
       // This will trigger the PaymentForm to show the checkout
       if (onAuthSuccess) {
         console.log('Calling onAuthSuccess');
-        onAuthSuccess();
+        onAuthSuccess(userCredential.user);
       }
       
     } catch (error) {
@@ -76,10 +76,11 @@ function Auth({ onClose, initialMode = 'login', initialEmail = '', onAuthSuccess
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
         <button
-          onClick={onClose}
+          onClick={() => onClose?.()}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          aria-label="Close"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -137,10 +138,7 @@ function Auth({ onClose, initialMode = 'login', initialEmail = '', onAuthSuccess
                 <p className="text-sm text-gray-600">
                   Don't have an account?{' '}
                   <button
-                    onClick={() => {
-                      onClose();
-                      onAuthSuccess();
-                    }}
+                    onClick={() => setMode('signup')}
                     className="text-blue-500 hover:text-blue-600 font-medium"
                   >
                     Get Started

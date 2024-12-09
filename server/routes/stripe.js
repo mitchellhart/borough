@@ -102,13 +102,24 @@ module.exports = function(authenticateUser) {
           const session = event.data.object;
           console.log('Checkout Session Data:', {
             id: session.id,
-            metadata: session.metadata
+            metadata: session.metadata,
+            subscription: session.subscription
           });
           
           const userId = session.metadata?.userId;
           if (userId) {
-            console.log('Updating subscription for userId:', userId);
-            await updateUserSubscription(userId);
+            // Update both subscription status and stripe_subscription_id
+            const result = await pool.query(
+              `UPDATE users 
+               SET subscription_status = $1,
+                   stripe_subscription_id = $2,
+                   updated_at = CURRENT_TIMESTAMP 
+               WHERE auth_id = $3 
+               RETURNING *`,
+              ['active', session.subscription, userId]
+            );
+
+            console.log('Updated user subscription:', result.rows[0]);
           } else {
             console.log('No userId found in session metadata:', session);
           }
@@ -138,6 +149,65 @@ module.exports = function(authenticateUser) {
     } catch (err) {
       console.error('Webhook Error:', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  });
+
+  // Simplified cancel subscription endpoint
+  router.post('/cancel-subscription', authenticateUser, async (req, res) => {
+    try {
+      const userId = req.user.uid;
+      console.log('Attempting to cancel subscription for userId:', userId);
+      
+      // Get subscription info from users table
+      const result = await pool.query(
+        `SELECT stripe_subscription_id, subscription_status 
+         FROM users 
+         WHERE auth_id = $1`,
+        [userId]
+      );
+
+      console.log('Database query result:', {
+        found: result.rows.length > 0,
+        subscriptionId: result.rows[0]?.stripe_subscription_id,
+        status: result.rows[0]?.subscription_status
+      });
+
+      if (!result.rows[0]?.stripe_subscription_id || result.rows[0].subscription_status !== 'active') {
+        console.log('Subscription check failed:', {
+          hasSubscriptionId: !!result.rows[0]?.stripe_subscription_id,
+          status: result.rows[0]?.subscription_status
+        });
+        throw new Error('No active subscription found');
+      }
+
+      console.log('Found active subscription, canceling in Stripe:', result.rows[0].stripe_subscription_id);
+
+      // Cancel in Stripe
+      await stripe.subscriptions.cancel(result.rows[0].stripe_subscription_id);
+
+      // Update user record
+      const updateResult = await pool.query(
+        `UPDATE users 
+         SET subscription_status = 'canceled',
+             updated_at = CURRENT_TIMESTAMP 
+         WHERE auth_id = $1 
+         RETURNING subscription_status`,
+        [userId]
+      );
+
+      console.log('Updated user subscription status:', updateResult.rows[0]);
+
+      res.json({ message: 'Subscription successfully canceled' });
+    } catch (error) {
+      console.error('Detailed cancel error:', {
+        message: error.message,
+        userId: req.user.uid,
+        stack: error.stack
+      });
+      res.status(500).json({ 
+        error: 'Failed to cancel subscription', 
+        details: error.message 
+      });
     }
   });
 

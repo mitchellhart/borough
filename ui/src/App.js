@@ -17,6 +17,8 @@ import Footer from './components/Footer';
 import Terms from './components/Terms';
 import ReturnPage from './components/ReturnPage';
 import Account from './components/Account';
+import { useNavigate } from 'react-router-dom';
+
 
 
 const firebaseConfig = {
@@ -38,7 +40,9 @@ function App() {
   const [user, setUser] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
   const userFilesRef = useRef();
-  const [showPayment, setShowPayment] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const navigate = useNavigate();
+
   
 
   const handleUploadSuccess = () => {
@@ -48,8 +52,29 @@ function App() {
   
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed, user:', user);
       setUser(user);
+      
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch(`/api/subscription-status`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await response.json();
+          console.log('Raw subscription response:', data);
+          console.log('Setting subscription status to:', data.status);
+          setSubscriptionStatus(data.status);
+        } catch (error) {
+          console.error('Error fetching subscription status:', error);
+          setSubscriptionStatus(null);
+        }
+      } else {
+        setSubscriptionStatus(null);
+      }
     });
     
     return () => unsubscribe();
@@ -67,7 +92,7 @@ function App() {
 <link rel="manifest" href="/site.webmanifest" />
       </Helmet>
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#85E5B5' }}>
-      <div className="mx-auto w-[1250px] px-4 py-8 flex-grow">
+      <div className="mx-auto w-full max-w-[1250px] px-4 sm:px-6 py-4 sm:py-8 flex-grow">
         <motion.div 
           initial={{ y: 50, opacity: 0 }} 
           animate={{ 
@@ -76,39 +101,63 @@ function App() {
             transition: { duration: 1, type: 'spring', stiffness: 100 }
           }}  
         >
-          <div className="bg-white rounded-3xl p-8">
+          <div className="bg-white rounded-3xl p-4 sm:p-8">
             <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
             {showAuth && (
               <Auth 
-                onClose={() => setShowAuth(false)} 
-                onGetStarted={() => setShowPayment(true)}
+                onClose={() => setShowAuth(false)}
+                initialMode='login'
+                onAuthSuccess={() => {
+                  console.log('Current subscription status:', subscriptionStatus);
+                  setShowAuth(false);
+                  // if (!subscriptionStatus || subscriptionStatus !== 'active') {
+                  //   navigate('/subscribe');
+                  // }
+                }}
               />
             )}
-            {showPayment && <PaymentForm onClose={() => setShowPayment(false)} />}
             <ScrollToTop />
             <Routes>
               <Route path="/" element={
                 <div className="flex flex-col items-center min-h-[80vh]">
-                  <div className="container mx-auto max-w-3xl text-center">
-                    {!user && <img src={BoroughLogo} alt="Borough" className="mx-auto mb-4 h-24 mt-40" />}
-                    {!user && <p className="text-xl text-gray-600 mb-16">Analyze your Home Inspection Report in Seconds</p>}
+                  <div className="container mx-auto max-w-3xl text-center px-4">
+                    {!user && <img src={BoroughLogo} alt="Borough" className="mx-auto mb-4 h-16 sm:h-24 mt-20 sm:mt-40" />}
+                    {!user && <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-16">Analyze your Home Inspection Report in Seconds</p>}
                     
                     {!user && 
-                    
                     <button
-                    onClick={() => setShowPayment(true)}
-                    className="bg-blue-500 text-white py-4 px-8 rounded-full mb-4"
+                      onClick={() => navigate('/subscribe')}
+                      className="bg-blue-500 text-white py-3 sm:py-4 px-6 sm:px-8 rounded-full mb-4 text-sm sm:text-base"
                     >
                       Get Started
                     </button>
                     }
 
-                    {user && <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />}
-                    {user && <UserFiles ref={userFilesRef} />}
+                    {user && subscriptionStatus !== 'active' && (
+                      <div className="text-center py-6 sm:py-12">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+                          Subscribe to Access All Features
+                        </h2>
+                        <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
+                          Get instant access to our AI-powered home inspection report analysis
+                        </p>
+                        <button
+                          onClick={() => navigate('/subscribe')}
+                          className="bg-blue-500 text-white py-3 sm:py-4 px-6 sm:px-8 rounded-full hover:bg-blue-600 transition-colors text-sm sm:text-base"
+                        >
+                          Subscribe Now
+                        </button>
+                      </div>
+                    )}
+                    {user && subscriptionStatus === 'active' && <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />}
+                    {user && subscriptionStatus === 'active' && <UserFiles ref={userFilesRef} />}
                   </div>
                 </div>
               } />
+              
+              <Route path="/subscribe" element={<PaymentForm />} />
               <Route path="/files/:fileId" element={<ReportView />} />
+              
               <Route path="/terms" element={<Terms />} />
               <Route path="/return" element={<ReturnPage />} />
               <Route path="/account" element={<Account />} />

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { getAuth } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout
@@ -10,14 +11,24 @@ import Auth from './Auth';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
-function PaymentForm({ onClose }) {
+function PaymentForm() {
   const [showCheckout, setShowCheckout] = useState(false);
-  const [showAuth, setShowAuth] = useState(true);
+  const [showAuth, setShowAuth] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
+  const navigate = useNavigate();
   
+  useEffect(() => {
+    const auth = getAuth();
+    if (auth.currentUser) {
+      setShowCheckout(true);
+    } else {
+      setShowAuth(true);
+    }
+  }, []);
+
   const fetchClientSecret = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/create-checkout-session', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +88,7 @@ function PaymentForm({ onClose }) {
           </div>
         </div>
         <button
-          onClick={onClose}
+          onClick={() => navigate(-1)} 
           className="absolute top-4 left-4 text-gray-600 hover:text-gray-800"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +109,7 @@ function PaymentForm({ onClose }) {
           {showAuth && (
             <Auth 
               initialMode="signup"
-              onClose={() => onClose()}
+              onClose={() => navigate(-1)}
               onAuthSuccess={handleAuthSuccess}
             />
           )}

@@ -11,6 +11,7 @@ const { PdfReader } = require('pdfreader');
 const OpenAI = require('openai');
 const { type } = require('os');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { updateUserSubscription, getUserSubscriptionStatus, pool } = require('./routes/users');
 
 const uploadsDir = 'uploads';
 if (!fs.existsSync(uploadsDir)){
@@ -113,13 +114,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Initialize PostgreSQL connection pool
-const pool = new Pool({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DB,
-  password: process.env.POSTGRES_PASSWORD,
-  port: process.env.POSTGRES_PORT || 5432,
-});
+// const pool = new Pool({
+//   user: process.env.POSTGRES_USER,
+//   host: process.env.POSTGRES_HOST,
+//   database: process.env.POSTGRES_DB,
+//   password: process.env.POSTGRES_PASSWORD,
+//   port: process.env.POSTGRES_PORT || 5432,
+// });
 
 // NOW initialize and use the files router (after pool and auth are defined)
 const filesRouter = require('./routes/files')(pool, authenticateUser);
@@ -396,16 +397,6 @@ app.post('/api/files', authenticateUser, upload.single('file'), async (req, res)
   }
 });
 
-// Example query endpoint
-app.get('/api/test-db', authenticateUser, async (req, res) => {
-  try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ time: result.rows[0] });
-  } catch (error) {
-    console.error('Database Error:', error);
-    res.status(500).json({ error: 'Database error' });
-  }
-});
 
 
 // Add the files route handler
@@ -433,6 +424,15 @@ app.get('/api/files', authenticateUser, async (req, res) => {
 app.get('/api/session-status', async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    
+    // Add this block to update subscription when session is complete
+    if (session.status === 'complete') {
+      const userId = session.metadata?.userId;
+      if (userId) {
+        await updateUserSubscription(userId);
+      }
+    }
+
     res.json({
       status: session.status,
       customer_email: session.customer_details?.email
@@ -447,30 +447,21 @@ app.get('/api/session-status', async (req, res) => {
 app.get('/api/subscription-status', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.uid;
-    
-    // Query the subscriptions table
-    const result = await pool.query(
-      'SELECT * FROM subscriptions WHERE user_id = $1',
-      [userId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.json({ status: 'inactive' });
-    }
-
-    const subscription = result.rows[0];
-    
-    // Log the subscription data for debugging
-    console.log('Subscription found:', subscription);
-
-    res.json({
-      status: subscription.status,
-      currentPeriodEnd: subscription.current_period_end,
-      stripeSubscriptionId: subscription.stripe_subscription_id
+    console.log('Checking subscription status for user:', {
+      userId: userId,
+      userEmail: req.user.email
     });
+    
+    const subscriptionStatus = await getUserSubscriptionStatus(userId);
+    console.log('Sending subscription status response:', subscriptionStatus);
+    
+    res.json(subscriptionStatus);
   } catch (error) {
     console.error('Error fetching subscription status:', error);
-    res.status(500).json({ error: 'Failed to fetch subscription status' });
+    res.status(500).json({ 
+      status: 'error',
+      message: 'Failed to fetch subscription status'
+    });
   }
 });
 
@@ -757,30 +748,7 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Helper function to update user subscription
-async function updateUserSubscription(email) {
-  try {
-    console.log('Attempting to update subscription for email:', email);
-    
-    const result = await pool.query(
-      `UPDATE users 
-       SET subscription_status = $1, 
-           updated_at = CURRENT_TIMESTAMP 
-       WHERE email = $2 
-       RETURNING *`,
-      ['active', email]
-    );
 
-    if (result.rows.length > 0) {
-      console.log('Successfully updated subscription:', result.rows[0]);
-    } else {
-      console.log('No user found with email:', email);
-    }
-  } catch (error) {
-    console.error('Database error:', error);
-    throw error;
-  }
-}
 
 // Update your authentication middleware to save user data
 app.post('/api/link-auth', authenticateUser, async (req, res) => {
@@ -806,7 +774,6 @@ app.post('/api/link-auth', authenticateUser, async (req, res) => {
        ON CONFLICT (email) 
        DO UPDATE SET 
          auth_id = EXCLUDED.auth_id,
-         subscription_status = EXCLUDED.subscription_status,
          updated_at = CURRENT_TIMESTAMP
        RETURNING *`,
       [email, authId, 'pending']
@@ -827,3 +794,15 @@ app.post('/api/link-auth', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to link auth', details: error.message });
   }
 });
+
+// // Add this endpoint
+// app.get('/api/users/:userId/subscription', async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     const subscriptionData = await getUserSubscriptionStatus(userId);
+//     res.json(subscriptionData);
+//   } catch (error) {
+//     console.error('Error getting subscription status:', error);
+//     res.status(500).json({ error: 'Failed to get subscription status' });
+//   }
+// });
