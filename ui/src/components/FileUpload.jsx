@@ -81,6 +81,8 @@ function FileUpload({ onFileProcessed }) {
   };
 
   return (
+    <>
+    <div className="rounded-b-3xl sm:p-8">
     <div className="w-full max-w-md mx-auto p-6">
       <div 
         className={`border-2 border-dashed border-white rounded-lg p-8 text-center
@@ -141,6 +143,8 @@ function FileUpload({ onFileProcessed }) {
         )}
       </div>
     </div>
+    </div>
+    </>
   );
 }
 

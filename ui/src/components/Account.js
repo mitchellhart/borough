@@ -131,6 +131,7 @@ function Account() {
   }
 
   return (
+    <div className="rounded-b-3xl sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Account Settings</h1>
       
@@ -219,6 +220,7 @@ function Account() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

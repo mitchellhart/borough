@@ -92,8 +92,9 @@ function App() {
         <meta name="apple-mobile-web-app-title" content="Borough" />
         <link rel="manifest" href="/site.webmanifest" />
       </Helmet>
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#E6E2DD' }}>
-      <div className="mx-auto w-full max-w-[1250px] px-4 flex-grow">
+      
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#6D8671' }}>
+      <div className="mx-auto w-full max-w-[1250px] px-4 flex-grow" >
         
             <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
             {showAuth && (
@@ -128,6 +129,7 @@ function App() {
 
                     {/* Subscription Status Content */}
                     {user && subscriptionStatus !== 'active' && (
+                      <div className="rounded-b-3xl sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
                         <div className="rounded-b-3xl p-4 sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
                           <div className="col-span-full text-center py-6">
                             <h2 className="text-2xl font-bold text-[#395E44] mb-4">
@@ -140,14 +142,17 @@ function App() {
                               Subscribe Now
                             </button>
                           </div>
-                      </div>       
+                      </div>    
+                      </div>   
                     )}
                     
                     {/* File Upload and User Files */}
                     {user && subscriptionStatus === 'active' && (
-                      <div className="col-span-full">
+                        <div className="rounded-b-3xl sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
+                      <div className="col-span-full" style={{ backgroundColor: '#E6E2DD' }}>
                         <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />
                         <UserFiles ref={userFilesRef} />
+                      </div>
                       </div>
                     )}
 
