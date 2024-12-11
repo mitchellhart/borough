@@ -18,6 +18,7 @@ import Terms from './components/Terms';
 import ReturnPage from './components/ReturnPage';
 import Account from './components/Account';
 import { useNavigate } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
 
 
 
@@ -85,23 +86,15 @@ function App() {
     <Helmet>
         <title>Borough</title>
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<link rel="shortcut icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-title" content="Borough" />
-<link rel="manifest" href="/site.webmanifest" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-title" content="Borough" />
+        <link rel="manifest" href="/site.webmanifest" />
       </Helmet>
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#85E5B5' }}>
-      <div className="mx-auto w-full max-w-[1250px] px-4 sm:px-6 py-4 sm:py-8 flex-grow">
-        <motion.div 
-          initial={{ y: 50, opacity: 0 }} 
-          animate={{ 
-            y: 0, 
-            opacity: 1, 
-            transition: { duration: 1, type: 'spring', stiffness: 100 }
-          }}  
-        >
-          <div className="bg-white rounded-3xl p-4 sm:p-8">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#E6E2DD' }}>
+      <div className="mx-auto w-full max-w-[1250px] px-4 flex-grow">
+        
             <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
             {showAuth && (
               <Auth 
@@ -119,40 +112,47 @@ function App() {
             <ScrollToTop />
             <Routes>
               <Route path="/" element={
-                <div className="flex flex-col items-center min-h-[80vh]">
-                  <div className="container mx-auto max-w-3xl text-center px-4">
-                    {!user && <img src={BoroughLogo} alt="Borough" className="mx-auto mb-4 h-16 sm:h-24 mt-20 sm:mt-40" />}
-                    {!user && <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-16">Analyze your Home Inspection Report in Seconds</p>}
-                    
+                <motion.div 
+                initial={{ y: -50, opacity: 0 }} 
+                animate={{ 
+                  y: 0, 
+                  opacity: 1, 
+                  transition: { duration: 0.4, type: 'easeOut', stiffness: 100 }
+                }}  
+              >
                     {!user && 
-                    <button
-                      onClick={() => navigate('/subscribe')}
-                      className="bg-blue-500 text-white py-3 sm:py-4 px-6 sm:px-8 rounded-full mb-4 text-sm sm:text-base"
-                    >
-                      Get Started
-                    </button>
+                      <div >
+                        <LandingPage />                     
+                      </div>
                     }
 
+                    {/* Subscription Status Content */}
                     {user && subscriptionStatus !== 'active' && (
-                      <div className="text-center py-6 sm:py-12">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-                          Subscribe to Access All Features
-                        </h2>
-                        <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-                          Get instant access to our AI-powered home inspection report analysis
-                        </p>
-                        <button
-                          onClick={() => navigate('/subscribe')}
-                          className="bg-blue-500 text-white py-3 sm:py-4 px-6 sm:px-8 rounded-full hover:bg-blue-600 transition-colors text-sm sm:text-base"
-                        >
-                          Subscribe Now
-                        </button>
+                        <div className="rounded-b-3xl p-4 sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
+                          <div className="col-span-full text-center py-6">
+                            <h2 className="text-2xl font-bold text-[#395E44] mb-4">
+                              Subscribe to Access All Features
+                            </h2>
+                            <button
+                              onClick={() => navigate('/subscribe')}
+                              className="bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-full text-lg font-medium hover:bg-opacity-90 transition-colors"
+                            >
+                              Subscribe Now
+                            </button>
+                          </div>
+                      </div>       
+                    )}
+                    
+                    {/* File Upload and User Files */}
+                    {user && subscriptionStatus === 'active' && (
+                      <div className="col-span-full">
+                        <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />
+                        <UserFiles ref={userFilesRef} />
                       </div>
                     )}
-                    {user && subscriptionStatus === 'active' && <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />}
-                    {user && subscriptionStatus === 'active' && <UserFiles ref={userFilesRef} />}
-                  </div>
-                </div>
+
+        </motion.div>
+            
               } />
               
               <Route path="/subscribe" element={<PaymentForm />} />
@@ -163,10 +163,9 @@ function App() {
               <Route path="/account" element={<Account />} />
               <Route path="/payment" element={<PaymentForm />} />
             </Routes>
-          </div>
-        </motion.div>
+
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   </>
   )

@@ -37,90 +37,91 @@ function NavBar({ onLoginClick, user }) {
     }
   };
 
-  const UserMenu = () => (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button
-          className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 focus:outline-none"
-        >
-          <span className="text-gray-600">
-            {user.email.charAt(0).toUpperCase()}
-          </span>
-        </button>
-      </DropdownMenu.Trigger>
-
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content 
-          className="min-w-[200px] bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5"
-          sideOffset={5}
-          align="end"
-        >
-          <DropdownMenu.Item asChild>
-            <Link
-              to="/account"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 outline-none cursor-pointer"
-            >
-              Account
-            </Link>
-          </DropdownMenu.Item>
-
-          <DropdownMenu.Separator className="h-[1px] bg-gray-200 m-1" />
-          
-          <DropdownMenu.Item 
-            className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 outline-none cursor-pointer"
-            onClick={handleLogout}
+  const UserMenu = ({ user }) => (
+    <div className="flex items-center">
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button
+            className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center hover:bg-gray-300 focus:outline-none"
           >
-            Logout
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+            <span className="text-gray-100">
+              {user && user.email ? user.email.charAt(0).toUpperCase() : ''}
+            </span>
+          </button>
+        </DropdownMenu.Trigger>
+
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content 
+            className="min-w-[200px] bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5"
+            sideOffset={5}
+            align="end"
+          >
+            <DropdownMenu.Item asChild>
+              <Link
+                to="/account"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 outline-none cursor-pointer"
+              >
+                Account
+              </Link>
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Separator className="h-[1px] bg-gray-200 m-1" />
+            
+            <DropdownMenu.Item 
+              className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 outline-none cursor-pointer"
+              onClick={handleLogout}
+            >
+              Logout
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+    </div>
   );
+
+  const renderUserSection = () => {
+    if (user) {
+      return <UserMenu user={user} />;
+    } else {
+      return (
+        <button
+          onClick={onLoginClick}
+          className="text-white font-bold px-4 py-2 rounded-2xl"
+          style={{ color: '#395E44', border: '2px solid #395E44' }}
+        >
+          Login
+        </button>
+      );
+    }
+  };
 
   // Render different styles for index page
   if (isIndexPage) {
     return (
-      <div className="w-full px-4 flex justify-end items-center">
-        {user && (
-          <>
-            <div className="flex-grow">
-              <Link to="/">
-                <img src={BoroughLogo} alt="Borough" className="h-6" />
-              </Link>
-            </div>
-            <UserMenu />
-          </>
-        )}
-        {!user && (
-          <button
-            onClick={onLoginClick}
-            className="bg-blue-500 text-white px-4 py-2 rounded-full"
-          >
-            Login
-          </button>
-        )}
+      <div className="w-full px-10 pt-4 flex justify-end items-center" style={{ backgroundColor: '#E6E2DD' }}>
+        <div className="flex-grow">
+          {user && (
+            <Link to="/">
+              <img src={BoroughLogo} alt="Borough" className="h-6" />
+            </Link>
+          )}
+        </div>
+        {renderUserSection()}
       </div>
     );
   }
 
   // Regular navbar for other pages
   return (
-    <nav className="p-8">
+    <nav className="p-8" style={{ backgroundColor: '#E6E2DD' }}>
       <div className="flex justify-between items-center">
-        <Link to="/">
-          <img src={BoroughLogo} alt="Borough" className="h-6" />
-        </Link>
-        <div>
-          {user ? (
-            <UserMenu />
-          ) : (
-            <button
-              onClick={onLoginClick}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Login
-            </button>
-          )}
+        {user && (
+          <Link to="/">
+            <img src={BoroughLogo} alt="Borough" className="h-6" />
+          </Link>
+        )}
+        <div className="pr-4">
+          {renderUserSection()}
         </div>
       </div>
     </nav>

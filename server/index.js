@@ -659,9 +659,12 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
                       ]
                     },
                     urgency: { type: "integer" },
-                    estimate: { type: "integer" }
+                    estimate: { type: "integer" },
+                    difficulty: { type: "string",
+                      description: "How difficult this issue is to fix by yourself. Easy, Medium, Hard"
+                     }
                   },
-                  required: ["item", "issue", "recommendation", "category", "urgency", "estimate"],
+                  required: ["item", "issue", "recommendation", "category", "urgency", "estimate", "difficulty"],
                   additionalProperties: false
                 }
               }

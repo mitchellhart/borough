@@ -74,22 +74,46 @@ function PaymentForm() {
   return (
     <div className="fixed inset-0 flex">
       {/* Left Panel - Product Info */}
-      <div className="w-1/2 bg-[#85E5B5] p-12 flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
-          <img src={BoroughLogo} alt="Borough" className="h-24 mb-8" />
-          <h1 className="text-4xl font-nohemi text-gray-800 mb-6">
+      <div className="w-1/2 p-12 flex flex-col" style={{ backgroundColor: '#E6E2DD' }}>
+        <div className="flex-1 flex flex-col justify-center">
+          <img src={BoroughLogo} alt="Borough" className="w-24 mb-6" />
+          <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-6xl font-nohemi leading-tight mb-8">
             Analyze Your Home Inspection Report
           </h1>
-          <div className="space-y-6 text-lg text-gray-700 max-w-md">
-            <p>✓ Instant AI Analysis</p>
-            <p>✓ Detailed Cost Estimates</p>
-            <p>✓ Priority Rankings</p>
-            <p>✓ Interactive Report Dashboard</p>
+          
+          {/* Feature list styled like landing page */}
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4 text-lg">
+              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
+                <span className="text-white">✓</span>
+              </div>
+              <span>Instant AI Analysis</span>
+            </div>
+            <div className="flex items-center space-x-4 text-lg">
+              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
+                <span className="text-white">✓</span>
+              </div>
+              <span>Detailed Cost Estimates</span>
+            </div>
+            <div className="flex items-center space-x-4 text-lg">
+              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
+                <span className="text-white">✓</span>
+              </div>
+              <span>Priority Rankings</span>
+            </div>
+            <div className="flex items-center space-x-4 text-lg">
+              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
+                <span className="text-white">✓</span>
+              </div>
+              <span>Interactive Report Dashboard</span>
+            </div>
           </div>
         </div>
+        
+        {/* Close button updated with new colors */}
         <button
           onClick={() => navigate(-1)} 
-          className="absolute top-4 left-4 text-gray-600 hover:text-gray-800"
+          className="absolute top-4 left-4 text-[#395E44] hover:text-[#2a4332]"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />

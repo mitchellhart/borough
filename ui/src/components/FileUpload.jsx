@@ -83,7 +83,7 @@ function FileUpload({ onFileProcessed }) {
   return (
     <div className="w-full max-w-md mx-auto p-6">
       <div 
-        className={`border-2 border-dashed rounded-lg p-8 text-center
+        className={`border-2 border-dashed border-white rounded-lg p-8 text-center
           ${dragActive ? 'border-black bg-gray-50' : 'border-gray-300'}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
