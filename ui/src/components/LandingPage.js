@@ -145,7 +145,7 @@ function LandingPage() {
                         </div>
                         <div className="absolute w-1/2 right-0 top-0 h-[675px] rounded-r-xl m-[13px]">
                             <img
-                                src={asset1x}
+                                src={asset1}
                                 alt="debug"
                                 className="w-full h-full object-cover"
                             />
