@@ -44,6 +44,58 @@ module.exports = function(authenticateUser) {
   router.post('/create-checkout-session', authenticateUser, async (req, res) => {
     try {
       const userId = req.user.uid;
+      console.log('Creating checkout session for user:', {
+        userId: userId,
+        userEmail: req.user.email,
+        env: {
+          stripeKey: !!process.env.STRIPE_SECRET_KEY,
+          priceId: !!process.env.STRIPE_PRICE_ID,
+          clientUrl: process.env.CLIENT_URL
+        }
+      });
+
+      // First, create or retrieve a customer
+      let customer;
+      try {
+        const customerResult = await pool.query(
+          'SELECT stripe_customer_id FROM users WHERE auth_id = $1',
+          [userId]
+        );
+        console.log('Customer query result:', customerResult.rows);
+
+        if (customerResult.rows[0]?.stripe_customer_id) {
+          customer = customerResult.rows[0].stripe_customer_id;
+          console.log('Found existing customer:', customer);
+        } else {
+          console.log('Creating new Stripe customer');
+          const newCustomer = await stripe.customers.create({
+            email: req.user.email,
+            metadata: { userId: userId }
+          });
+          customer = newCustomer.id;
+          console.log('Created new customer:', customer);
+          
+          // Save customer ID to database
+          await pool.query(
+            'UPDATE users SET stripe_customer_id = $1 WHERE auth_id = $2',
+            [customer, userId]
+          );
+          console.log('Saved customer ID to database');
+        }
+      } catch (dbError) {
+        console.error('Database error:', {
+          message: dbError.message,
+          stack: dbError.stack,
+          code: dbError.code
+        });
+        throw dbError;
+      }
+
+      console.log('Creating Stripe checkout session with params:', {
+        customer,
+        priceId: process.env.STRIPE_PRICE_ID,
+        returnUrl: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`
+      });
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -55,18 +107,39 @@ module.exports = function(authenticateUser) {
         ],
         mode: 'subscription',
         ui_mode: 'embedded',
+        customer: customer,
         return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
         metadata: {
           userId: userId
         }
       });
 
+      console.log('Checkout session created successfully:', {
+        sessionId: session.id,
+        clientSecret: !!session.client_secret
+      });
+
       res.json({
         clientSecret: session.client_secret
       });
     } catch (error) {
-      console.error('Error creating checkout session:', error);
-      res.status(500).json({ error: 'Failed to create checkout session' });
+      console.error('Error creating checkout session:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        type: error.type,
+        raw: error.raw ? {
+          message: error.raw.message,
+          code: error.raw.code,
+          type: error.raw.type
+        } : undefined
+      });
+      
+      res.status(500).json({ 
+        error: 'Failed to create checkout session',
+        details: error.message 
+      });
     }
   });
 

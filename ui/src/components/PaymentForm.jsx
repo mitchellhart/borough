@@ -32,18 +32,26 @@ function PaymentForm() {
 
   const fetchClientSecret = useCallback(async () => {
     try {
+      const idToken = await getAuth().currentUser.getIdToken();
+      console.log('Making request to:', `${process.env.REACT_APP_API_URL}/api/create-checkout-session`);
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await getAuth().currentUser.getIdToken()}`
+          'Authorization': `Bearer ${idToken}`
         },
         credentials: 'include'
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Checkout session error:', errorText);
+        console.error('Checkout session error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
@@ -51,7 +59,11 @@ function PaymentForm() {
       console.log('Client secret fetched successfully');
       return data.clientSecret;
     } catch (error) {
-      console.error('fetchClientSecret error:', error);
+      console.error('fetchClientSecret error:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       alert('Unable to initialize payment form. Please try again later.');
       throw error;
     }
