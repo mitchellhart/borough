@@ -27,9 +27,13 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-helmet": "^6.1.0",
+    "react-multi-carousel": "^2.8.5",
     "react-router-dom": "^7.0.1",
     "react-scripts": "5.0.1",
+    "react-slick": "^0.30.2",
     "react-to-print": "^3.0.2",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^11.1.15",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "web-vitals": "^2.1.4"

@@ -11,6 +11,10 @@ import Auth from './Auth';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
+stripePromise.catch(error => {
+  console.error('Stripe initialization error:', error);
+});
+
 function PaymentForm() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -38,13 +42,17 @@ function PaymentForm() {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Checkout session error:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Client secret fetched successfully');
       return data.clientSecret;
     } catch (error) {
       console.error('fetchClientSecret error:', error);
+      alert('Unable to initialize payment form. Please try again later.');
       throw error;
     }
   }, []);
@@ -145,7 +153,11 @@ function PaymentForm() {
               >
                 <EmbeddedCheckout 
                   className="h-full"
-                  onLoadError={(error) => console.error('Checkout load error:', error)}
+                  onComplete={() => console.log('Checkout completed successfully')}
+                  onLoadError={(error) => {
+                    console.error('Checkout load error:', error);
+                    alert('Unable to load payment form. Please try again later.');
+                  }}
                 />
               </EmbeddedCheckoutProvider>
             </div>
