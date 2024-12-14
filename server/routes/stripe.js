@@ -39,6 +39,126 @@ async function updateUserSubscription(userId) {
   }
 }
 
+  // Webhook route - needs raw body
+  router.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    
+    try {
+      const event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+
+      console.log('Successfully constructed event:', event.type);
+
+      // Handle the event
+      switch (event.type) {
+        case 'checkout.session.completed':
+          const session = event.data.object;
+          console.log('Checkout Session Data:', {
+            id: session.id,
+            metadata: session.metadata,
+            subscription: session.subscription,
+            customer: session.customer
+          });
+          
+          const userId = session.metadata?.userId;
+          if (userId) {
+            try {
+              // First try to get the subscription details
+              const subscription = await stripe.subscriptions.retrieve(session.subscription);
+              
+              // Update user with subscription details
+              const result = await pool.query(
+                `UPDATE users 
+                 SET subscription_status = $1,
+                     stripe_subscription_id = $2,
+                     stripe_customer_id = $3,
+                     updated_at = CURRENT_TIMESTAMP 
+                 WHERE auth_id = $4 
+                 RETURNING *`,
+                ['active', session.subscription, session.customer, userId]
+              );
+
+              console.log('Updated user subscription details:', {
+                userId,
+                subscriptionId: session.subscription,
+                customerId: session.customer,
+                result: result.rows[0]
+              });
+            } catch (error) {
+              console.error('Error updating subscription details:', error);
+              throw error;
+            }
+          } else {
+            console.log('No userId found in session metadata:', session);
+          }
+          break;
+        
+        case 'customer.subscription.created':
+          const newSubscription = event.data.object;
+          console.log('New Subscription Created:', {
+            id: newSubscription.id,
+            customer: newSubscription.customer,
+            status: newSubscription.status
+          });
+          
+          // Try to find user by customer ID if metadata is missing
+          if (!newSubscription.metadata?.userId) {
+            try {
+              const userResult = await pool.query(
+                'SELECT auth_id FROM users WHERE stripe_customer_id = $1',
+                [newSubscription.customer]
+              );
+              if (userResult.rows[0]) {
+                newSubscription.metadata = { 
+                  userId: userResult.rows[0].auth_id 
+                };
+              }
+            } catch (error) {
+              console.error('Error finding user by customer ID:', error);
+            }
+          }
+          
+          if (newSubscription.metadata?.userId) {
+            await pool.query(
+              `UPDATE users 
+               SET subscription_status = $1,
+                   stripe_subscription_id = $2,
+                   updated_at = CURRENT_TIMESTAMP 
+               WHERE auth_id = $3`,
+              ['active', newSubscription.id, newSubscription.metadata.userId]
+            );
+          }
+          break;
+          
+        case 'customer.subscription.updated':
+          const subscription = event.data.object;
+          console.log('Subscription Data:', {
+            id: subscription.id,
+            metadata: subscription.metadata
+          });
+          
+          const subUserId = subscription.metadata?.userId;
+          if (subUserId) {
+            await updateUserSubscription(subUserId);
+          } else {
+            console.log('No userId found in subscription metadata:', subscription);
+          }
+          break;
+          
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (err) {
+      console.error('Webhook Error:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  });
+
 module.exports = function(authenticateUser) {
   // Regular routes that need authentication
   router.post('/create-checkout-session', authenticateUser, async (req, res) => {
@@ -169,74 +289,6 @@ module.exports = function(authenticateUser) {
     }
   });
 
-  // Webhook route - needs raw body
-  router.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    
-    try {
-      const event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-
-      console.log('Successfully constructed event:', event.type);
-
-      // Handle the event
-      switch (event.type) {
-        case 'checkout.session.completed':
-          const session = event.data.object;
-          console.log('Checkout Session Data:', {
-            id: session.id,
-            metadata: session.metadata,
-            subscription: session.subscription
-          });
-          
-          const userId = session.metadata?.userId;
-          if (userId) {
-            // Update both subscription status and stripe_subscription_id
-            const result = await pool.query(
-              `UPDATE users 
-               SET subscription_status = $1,
-                   stripe_subscription_id = $2,
-                   updated_at = CURRENT_TIMESTAMP 
-               WHERE auth_id = $3 
-               RETURNING *`,
-              ['active', session.subscription, userId]
-            );
-
-            console.log('Updated user subscription:', result.rows[0]);
-          } else {
-            console.log('No userId found in session metadata:', session);
-          }
-          break;
-        
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated':
-          const subscription = event.data.object;
-          console.log('Subscription Data:', {
-            id: subscription.id,
-            metadata: subscription.metadata
-          });
-          
-          const subUserId = subscription.metadata?.userId;
-          if (subUserId) {
-            await updateUserSubscription(subUserId);
-          } else {
-            console.log('No userId found in subscription metadata:', subscription);
-          }
-          break;
-          
-        default:
-          console.log(`Unhandled event type ${event.type}`);
-      }
-
-      res.json({ received: true });
-    } catch (err) {
-      console.error('Webhook Error:', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-  });
 
   // Simplified cancel subscription endpoint
   router.post('/cancel-subscription', authenticateUser, async (req, res) => {

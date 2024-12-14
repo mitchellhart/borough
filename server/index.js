@@ -75,6 +75,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+app.use('/api/webhook', express.raw({ type: 'application/json' }));
+
 // Define authentication middleware
 const authenticateUser = async (req, res, next) => {
   try {
@@ -108,9 +110,6 @@ const webhookRoutes = require('./routes/webhook');
 // Mount routes
 app.use('/api/webhook', webhookRoutes);
 
-// THEN: Add your other middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Initialize PostgreSQL connection pool
 // const pool = new Pool({
@@ -740,10 +739,6 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch analysis' });
   }
 });
-
-// Regular routes with JSON parsing
-app.use(express.json());
-
 
 
 // IMPORTANT: Move this AFTER the webhook route
