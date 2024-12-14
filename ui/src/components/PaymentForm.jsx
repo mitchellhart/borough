@@ -19,8 +19,9 @@ function PaymentForm() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const auth = getAuth();
     if (auth.currentUser) {
@@ -34,13 +35,14 @@ function PaymentForm() {
     try {
       const idToken = await getAuth().currentUser.getIdToken();
       console.log('Making request to:', `${process.env.REACT_APP_API_URL}/api/create-checkout-session`);
-      
+
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
+        body: JSON.stringify({ couponId: couponCode }),
         credentials: 'include'
       });
 
@@ -67,7 +69,7 @@ function PaymentForm() {
       alert('Unable to initialize payment form. Please try again later.');
       throw error;
     }
-  }, []);
+  }, [couponCode]);
 
   useEffect(() => {
     const preventDefault = (e) => {
@@ -100,7 +102,7 @@ function PaymentForm() {
           <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-6xl font-nohemi leading-tight mb-8">
             Analyze Your Home Inspection Report
           </h1>
-          
+
           {/* Feature list styled like landing page */}
           <div className="space-y-6">
             <div className="flex items-center space-x-4 text-lg">
@@ -129,10 +131,10 @@ function PaymentForm() {
             </div>
           </div>
         </div>
-        
+
         {/* Close button updated with new colors */}
         <button
-          onClick={() => navigate(-1)} 
+          onClick={() => navigate(-1)}
           className="absolute top-4 left-4 text-[#395E44] hover:text-[#2a4332]"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,10 +150,10 @@ function PaymentForm() {
             {showCheckout ? 'Subscribe to Borough' : 'Create Your Account'}
           </h2>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto">
           {showAuth && (
-            <Auth 
+            <Auth
               initialMode="signup"
               onClose={() => navigate(-1)}
               onAuthSuccess={handleAuthSuccess}
@@ -159,11 +161,13 @@ function PaymentForm() {
           )}
           {showCheckout && (
             <div className="p-8 h-full">
+              
               <EmbeddedCheckoutProvider
                 stripe={stripePromise}
                 options={{ fetchClientSecret }}
               >
-                <EmbeddedCheckout 
+                
+                <EmbeddedCheckout
                   className="h-full"
                   onComplete={() => console.log('Checkout completed successfully')}
                   onLoadError={(error) => {
@@ -172,6 +176,7 @@ function PaymentForm() {
                   }}
                 />
               </EmbeddedCheckoutProvider>
+              
             </div>
           )}
         </div>

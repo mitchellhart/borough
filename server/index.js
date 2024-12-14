@@ -93,14 +93,13 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
-// THEN: Mount Stripe routes (including webhook) BEFORE body parsing
-const stripeRoutes = require('./routes/stripe')(authenticateUser);
-app.use('/api', stripeRoutes);
-
 // AFTER: Add body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// THEN: Mount Stripe routes (including webhook) BEFORE body parsing
+const stripeRoutes = require('./routes/stripe')(authenticateUser);
+app.use('/api', stripeRoutes);
 
 
 // Initialize routes with middleware
@@ -420,28 +419,28 @@ app.get('/api/files', authenticateUser, async (req, res) => {
   }
 });
 
-// THEN: Add the session status endpoint specifically
-app.get('/api/session-status', async (req, res) => {
-  try {
-    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+// DUPLICATED IN STRIPE.JS
+// app.get('/api/session-status', async (req, res) => {
+//   try {
+//     const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
     
-    // Add this block to update subscription when session is complete
-    if (session.status === 'complete') {
-      const userId = session.metadata?.userId;
-      if (userId) {
-        await updateUserSubscription(userId);
-      }
-    }
+//     // Add this block to update subscription when session is complete
+//     if (session.status === 'complete') {
+//       const userId = session.metadata?.userId;
+//       if (userId) {
+//         await updateUserSubscription(userId);
+//       }
+//     }
 
-    res.json({
-      status: session.status,
-      customer_email: session.customer_details?.email
-    });
-  } catch (error) {
-    console.error('Stripe session status error:', error);
-    res.status(500).json({ error: 'Failed to get session status' });
-  }
-});
+//     res.json({
+//       status: session.status,
+//       customer_email: session.customer_details?.email
+//     });
+//   } catch (error) {
+//     console.error('Stripe session status error:', error);
+//     res.status(500).json({ error: 'Failed to get session status' });
+//   }
+// });
 
 // Add this BEFORE the catch-all route
 app.get('/api/subscription-status', authenticateUser, async (req, res) => {

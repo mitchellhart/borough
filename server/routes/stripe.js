@@ -44,6 +44,8 @@ module.exports = function(authenticateUser) {
   router.post('/create-checkout-session', authenticateUser, async (req, res) => {
     try {
       const userId = req.user.uid;
+      const { couponId } = req.body; // Add this line to get coupon
+
       console.log('Creating checkout session for user:', {
         userId: userId,
         userEmail: req.user.email,
@@ -106,6 +108,10 @@ module.exports = function(authenticateUser) {
           },
         ],
         mode: 'subscription',
+        allow_promotion_codes: true,
+        discounts: couponId ? [{
+          coupon: couponId,
+        }] : undefined,
         ui_mode: 'embedded',
         customer: customer,
         return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
@@ -113,6 +119,12 @@ module.exports = function(authenticateUser) {
           userId: userId
         }
       });
+
+      if (couponId) {
+        session.discounts = [{
+          coupon: couponId,
+        }];
+      }
 
       console.log('Checkout session created successfully:', {
         sessionId: session.id,
@@ -142,6 +154,7 @@ module.exports = function(authenticateUser) {
       });
     }
   });
+
 
   router.get('/session-status', async (req, res) => {
     try {
