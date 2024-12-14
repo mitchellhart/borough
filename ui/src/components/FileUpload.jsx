@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -7,6 +7,32 @@ function FileUpload({ onFileProcessed }) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState(new Set());
+
+  useEffect(() => {
+    const fetchUploadedFiles = async () => {
+      try {
+        const token = await getAuth().currentUser.getIdToken();
+        const response = await fetch(`${API_URL}/api/files`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const files = await response.json();
+        
+        // Create signatures using only file size
+        const signatures = files.map(file => 
+          `${file.file_size}`
+        );
+        console.log('Existing file signatures:', signatures);
+        setUploadedFiles(new Set(signatures));
+      } catch (error) {
+        console.error('Error fetching uploaded files:', error);
+      }
+    };
+
+    fetchUploadedFiles();
+  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -36,6 +62,20 @@ function FileUpload({ onFileProcessed }) {
   };
 
   const handleFiles = async (files) => {
+    // Create signature using only file size
+    const newFileSignature = `${files[0].size}`;
+    console.log('New file signature:', newFileSignature);
+    console.log('Current uploaded files:', [...uploadedFiles]);
+    
+    // Check if this file has already been uploaded
+    if (uploadedFiles.has(newFileSignature)) {
+      console.log('Duplicate file detected!');
+      alert('This report has already been uploaded. You may only upload one report per property.');
+      return;
+    }
+
+    console.log('Proceeding with upload of new file');
+
     try {
       setIsLoading(true);
       const token = await getAuth().currentUser.getIdToken();
@@ -57,6 +97,13 @@ function FileUpload({ onFileProcessed }) {
       const data = await response.json();
       await analyzeFile(data.file.id, token);
       console.log('File uploaded successfully:', data);
+      
+      // Add the new file signature to the set of uploaded files
+      setUploadedFiles(prev => {
+        const newSet = new Set([...prev, newFileSignature]);
+        console.log('Updated uploaded files:', [...newSet]);
+        return newSet;
+      });
       
       if (onFileProcessed) onFileProcessed();
       

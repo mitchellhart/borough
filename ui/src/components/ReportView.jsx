@@ -4,9 +4,9 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import EstimateSummary from './EstimateSummary';
 import ReportSection from './ReportSection';
 import { motion } from "motion/react"
-import { 
-  useReactTable, 
-  getCoreRowModel, 
+import {
+  useReactTable,
+  getCoreRowModel,
   flexRender,
   getSortedRowModel
 } from '@tanstack/react-table'
@@ -30,10 +30,10 @@ function ReportView() {
   const getAnalysis = () => {
     if (!file?.ai_analysis) return null;
     try {
-      const analysis = typeof file.ai_analysis === 'string' 
-        ? JSON.parse(file.ai_analysis) 
+      const analysis = typeof file.ai_analysis === 'string'
+        ? JSON.parse(file.ai_analysis)
         : file.ai_analysis;
-      
+
       return analysis;
     } catch (error) {
       console.error('Error parsing AI analysis:', error);
@@ -43,10 +43,10 @@ function ReportView() {
 
   const filters = useMemo(() => {
     if (!getAnalysis()?.findings) return { categories: [], urgencyLevels: [] };
-    
+
     const findings = getAnalysis().findings;
     console.log('Available urgency levels:', [...new Set(findings.map(f => f.urgency))]);
-    
+
     return {
       categories: ['all', ...new Set(findings.map(f => f.category))],
       urgencyLevels: ['all', ...new Set(findings.map(f => f.urgency))]
@@ -55,7 +55,7 @@ function ReportView() {
 
   const processedFindings = useMemo(() => {
     let findings = getAnalysis()?.findings || [];
-    
+
     // Apply filters
     if (filterCategory !== 'all') {
       findings = findings.filter(f => f.category === filterCategory);
@@ -67,7 +67,7 @@ function ReportView() {
         return findingUrgency === filterValue;
       });
     }
-    
+
     return findings;
   }, [file, filterCategory, filterUrgency]);
 
@@ -162,10 +162,10 @@ function ReportView() {
             'Low': 4,
             'Informational': 5
           };
-          
+
           const aValue = urgencyOrder[rowA.original.urgency] || 999;
           const bValue = urgencyOrder[rowB.original.urgency] || 999;
-          
+
           return aValue - bValue;
         }
       },
@@ -199,14 +199,14 @@ function ReportView() {
             if (!value) return 0;
             if (value === "Variable") return 0;
             if (typeof value === 'number') return value;
-            
+
             const numericValue = parseFloat(value.toString().replace(/[$,]/g, ''));
             return isNaN(numericValue) ? 0 : numericValue;
           };
 
           const aValue = getNumericValue(rowA.original.estimate);
           const bValue = getNumericValue(rowB.original.estimate);
-          
+
           return aValue - bValue;
         }
       },
@@ -264,33 +264,33 @@ function ReportView() {
   const calculateTotalEstimate = () => {
     const analysis = getAnalysis();
     if (!analysis?.findings) return 0;
-    
+
     const total = analysis.findings.reduce((total, finding) => {
       console.log('Processing finding:', finding.item);
       console.log('Estimate value:', finding.estimate);
-      
+
       // Skip if estimate is "Variable" or undefined
       if (!finding.estimate || finding.estimate === "Variable") {
         console.log('Skipping due to Variable or undefined');
         return total;
       }
-      
+
       if (typeof finding.estimate === 'number') {
         return total + finding.estimate;
       }
-      
+
       // Handle string values
       // Remove '$' and any commas, then convert to number
       const cleanedValue = finding.estimate.toString().replace(/[$,]/g, '');
       console.log('Cleaned value:', cleanedValue);
-      
+
       const amount = parseFloat(cleanedValue);
       console.log('Parsed amount:', amount);
-      
+
       // Only add if it's a valid number
       const newTotal = isNaN(amount) ? total : total + amount;
       console.log('Running total:', newTotal);
-      
+
       return newTotal;
     }, 0);
 
@@ -299,33 +299,33 @@ function ReportView() {
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto bg-surface">
       {/* Simplify header to just the back button */}
       <div className="flex items-center mb-6 ml-6">
         <button
           onClick={() => navigate('/')}
           className="inline-flex items-center text-gray-600 hover:text-gray-800"
         >
-          <svg 
-            className="w-6 h-6 mr-2" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className="w-6 h-6 mr-2"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
           Back
         </button>
       </div>
 
-      {/* Remove the ref from this div */}
+
       {file && file.ai_analysis && (
-        <div>
+        <div className="flex flex-col gap-4 pb-60 py-6 bg-surface">
           <EstimateSummary
             address={getAnalysis()?.property?.address || 'No address available'}
             date={getAnalysis()?.property?.inspectionDate || 'No date available'}
@@ -341,91 +341,93 @@ function ReportView() {
             findings={getAnalysis()?.findings || []}
           />
 
+          {/* report contents */}
           {/* Filter controls */}
-          <div className="flex gap-4 mb-6 py-6">
-            <Select.Root value={filterCategory} onValueChange={setFilterCategory}>
-              <Select.Trigger 
-                className="inline-flex items-center justify-between rounded px-4 py-2 text-sm gap-2 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none"
-                aria-label="Category"
-              >
-                <Select.Value placeholder="Select a category" />
-                <Select.Icon>
-                  <ChevronDownIcon />
-                </Select.Icon>
-              </Select.Trigger>
-
-              <Select.Portal>
-                <Select.Content 
-                  className="overflow-hidden bg-white rounded-md shadow-lg border border-gray-200"
-                  position="popper"
-                  sideOffset={5}
+          
+            <div className="flex gap-4 mb-6 py-6 bg-surface">
+              <Select.Root value={filterCategory} onValueChange={setFilterCategory}>
+                <Select.Trigger
+                  className="inline-flex items-center justify-between rounded px-4 py-2 text-sm gap-2 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none"
+                  aria-label="Category"
                 >
-                  <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
-                    <ChevronUpIcon />
-                  </Select.ScrollUpButton>
-                  
-                  <Select.Viewport className="p-1">
-                    {filters.categories.map((category) => (
-                      <Select.Item
-                        key={category}
-                        value={category}
-                        className="relative flex items-center px-6 py-2 text-sm text-gray-700 rounded-sm
-                        "
-                      >
-                        <Select.ItemText>{category}</Select.ItemText>
-                        <Select.ItemIndicator className="absolute right-2 inline-flex items-center">
-                          <CheckIcon />
-                        </Select.ItemIndicator>
-                      </Select.Item>
-                    ))}
-                  </Select.Viewport>
-                </Select.Content>
-              </Select.Portal>
-            </Select.Root>
-
-            <Select.Root value={filterUrgency} onValueChange={setFilterUrgency}>
-              <Select.Trigger 
-                className="inline-flex items-center justify-between rounded px-4 py-2 text-sm gap-2 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none"
-                aria-label="Urgency"
-              >
-                <Select.Value placeholder="Select urgency" />
-                <Select.Icon>
-                  <ChevronDownIcon />
-                </Select.Icon>
-              </Select.Trigger>
-
-              <Select.Portal>
-                <Select.Content 
-                  className="overflow-hidden bg-white rounded-md shadow-lg border border-gray-200"
-                  position="popper"
-                  sideOffset={5}
-                >
-                  <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
-                    <ChevronUpIcon />
-                  </Select.ScrollUpButton>
-                  
-                  <Select.Viewport className="p-1">
-                    {filters.urgencyLevels.map((level) => (
-                      <Select.Item
-                        key={level}
-                        value={level}
-                        className="relative flex items-center px-6 py-2 text-sm text-gray-700 rounded-sm hover:bg-gray-100 cursor-pointer outline-none data-[highlighted]:bg-gray-100"
-                      >
-                        <Select.ItemText>{level === 'all' ? 'All Urgency Levels' : level}</Select.ItemText>
-                        <Select.ItemIndicator className="absolute left-1 inline-flex items-center">
-                          <CheckIcon />
-                        </Select.ItemIndicator>
-                      </Select.Item>
-                    ))}
-                  </Select.Viewport>
-
-                  <Select.ScrollDownButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
+                  <Select.Value placeholder="Select a category" />
+                  <Select.Icon>
                     <ChevronDownIcon />
-                  </Select.ScrollDownButton>
-                </Select.Content>
-              </Select.Portal>
-            </Select.Root>
-          </div>
+                  </Select.Icon>
+                </Select.Trigger>
+
+                <Select.Portal>
+                  <Select.Content
+                    className="overflow-hidden bg-white rounded-md shadow-lg border border-gray-200"
+                    position="popper"
+                    sideOffset={5}
+                  >
+                    <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
+                      <ChevronUpIcon />
+                    </Select.ScrollUpButton>
+
+                    <Select.Viewport className="p-1">
+                      {filters.categories.map((category) => (
+                        <Select.Item
+                          key={category}
+                          value={category}
+                          className="relative flex items-center px-6 py-2 text-sm text-gray-700 rounded-sm
+                        "
+                        >
+                          <Select.ItemText>{category}</Select.ItemText>
+                          <Select.ItemIndicator className="absolute right-2 inline-flex items-center">
+                            <CheckIcon />
+                          </Select.ItemIndicator>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+
+              <Select.Root value={filterUrgency} onValueChange={setFilterUrgency}>
+                <Select.Trigger
+                  className="inline-flex items-center justify-between rounded px-4 py-2 text-sm gap-2 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none"
+                  aria-label="Urgency"
+                >
+                  <Select.Value placeholder="Select urgency" />
+                  <Select.Icon>
+                    <ChevronDownIcon />
+                  </Select.Icon>
+                </Select.Trigger>
+
+                <Select.Portal>
+                  <Select.Content
+                    className="overflow-hidden bg-white rounded-md shadow-lg border border-gray-200"
+                    position="popper"
+                    sideOffset={5}
+                  >
+                    <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
+                      <ChevronUpIcon />
+                    </Select.ScrollUpButton>
+
+                    <Select.Viewport className="p-1">
+                      {filters.urgencyLevels.map((level) => (
+                        <Select.Item
+                          key={level}
+                          value={level}
+                          className="relative flex items-center px-6 py-2 text-sm text-gray-700 rounded-sm hover:bg-gray-100 cursor-pointer outline-none data-[highlighted]:bg-gray-100"
+                        >
+                          <Select.ItemText>{level === 'all' ? 'All Urgency Levels' : level}</Select.ItemText>
+                          <Select.ItemIndicator className="absolute left-1 inline-flex items-center">
+                            <CheckIcon />
+                          </Select.ItemIndicator>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+
+                    <Select.ScrollDownButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
+                      <ChevronDownIcon />
+                    </Select.ScrollDownButton>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </div>
 
           {/* Table */}
           <div className="rounded-md border">
@@ -467,7 +469,7 @@ function ReportView() {
               </tbody>
             </table>
           </div>
-        </div>
+          </div>
       )}
     </div>
   );

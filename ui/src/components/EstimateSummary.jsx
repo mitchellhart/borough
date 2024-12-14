@@ -127,7 +127,7 @@ function EstimateSummary(props) {
   };
 
   return (
-      <div className="p-8">
+      <div className="p-8 bg-surface">
       <div className="mb-12">
         <div className="flex justify-between items-start">
           <div>

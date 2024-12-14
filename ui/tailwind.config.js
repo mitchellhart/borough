@@ -8,6 +8,9 @@ module.exports = {
       fontFamily: {
         'nohemi': ['Nohemi', 'sans-serif'],
       },
+      colors: {
+        'surface': '#E6E2DD',
+      },
     },
   },
   plugins: [
