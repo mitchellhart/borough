@@ -161,28 +161,7 @@ pool.query(`
   )
 `).catch(err => console.error('Error creating files table:', err));
 
-// Add this near your other CREATE TABLE queries
-pool.query(`
-  CREATE TABLE IF NOT EXISTS file_analyses (
-    id SERIAL PRIMARY KEY,
-    file_id INTEGER REFERENCES files(id) ON DELETE CASCADE,
-    analysis_data JSONB NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )
-`).catch(err => console.error('Error creating file_analyses table:', err));
 
-// Add this near your other CREATE TABLE queries
-pool.query(`
-  CREATE TABLE IF NOT EXISTS subscriptions (
-    id SERIAL PRIMARY KEY,
-    user_id TEXT NOT NULL UNIQUE,
-    stripe_customer_id TEXT,
-    stripe_subscription_id TEXT,
-    status TEXT NOT NULL,
-    current_period_end TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )
-`).catch(err => console.error('Error creating subscriptions table:', err));
 
 // First check if the table exists
 pool.query(`
@@ -590,7 +569,7 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
       messages: [
         { 
           role: "system", 
-          content: "You are a powerful home inspector software that analyzes inspection reports and shares back helpful and accurate information in the format specified below. Please look at the provided report and share your best answers in the format provided. If you cannot find information, simply state 'No inspected'." 
+          content: "You are a powerful home inspector software that analyzes inspection reports. Please read the report data carefully and identify each item reported and shares back helpful and accurate information in the format specified below. Please look at the provided report and share your best answers in the format provided. If you cannot find information for a given category, simply state 'No inspected'." 
         },
         { 
           role: "user", 
@@ -625,7 +604,7 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
                    },
                   shortSummary: { 
                     type: "string",
-                    description : "A brief summary of the entire inspection report in 1 short sentance."
+                    description : "A brief summary of the entire inspection report in one short sentance."
                    }
                 },
                 required: ["address", "inspectionDate", "inspectedBy", "summary", "shortSummary"],
@@ -658,11 +637,20 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
                     },
                     urgency: { type: "integer" },
                     estimate: { type: "integer" },
-                    difficulty: { type: "string",
-                      description: "How difficult this issue is to fix by yourself. Easy, Medium, Hard"
-                     }
+                    difficultyScore: { 
+                      type: "integer",
+                      description: "How difficult this issue is to fix by yourself (DIY). Answer 1-5"
+                     },
+                    difficultyDescription: { 
+                      type: "string",
+                      description: "Briefly explaing in how difficult this issue is to fix withough a professional or speciized tools. If it is easy, explain why. If it is hard, explain why."
+                     },
+                    hoursToFix: { 
+                      type: "integer",
+                      description: "How many estimatedhours it would take to fix this issue if done by a professional."
+                     },
                   },
-                  required: ["item", "issue", "recommendation", "category", "urgency", "estimate", "difficulty"],
+                  required: ["item", "issue", "recommendation", "category", "urgency", "estimate", "difficultyScore", "difficultyDescription", "hoursToFix"],
                   additionalProperties: false
                 }
               }
@@ -791,15 +779,3 @@ app.post('/api/link-auth', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to link auth', details: error.message });
   }
 });
-
-// // Add this endpoint
-// app.get('/api/users/:userId/subscription', async (req, res) => {
-//   try {
-//     const { userId } = req.params;
-//     const subscriptionData = await getUserSubscriptionStatus(userId);
-//     res.json(subscriptionData);
-//   } catch (error) {
-//     console.error('Error getting subscription status:', error);
-//     res.status(500).json({ error: 'Failed to get subscription status' });
-//   }
-// });

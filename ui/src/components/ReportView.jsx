@@ -12,6 +12,7 @@ import {
 } from '@tanstack/react-table'
 import * as Select from '@radix-ui/react-select';
 import { ChevronDownIcon, ChevronUpIcon, CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
+import FindingsTable from './FindingsTable';
 
 function ReportView() {
   const { fileId } = useParams();
@@ -123,144 +124,6 @@ function ReportView() {
     });
   };
 
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'item',
-        header: 'Item',
-      },
-      {
-        accessorKey: 'category',
-        header: 'Category',
-      },
-      {
-        accessorKey: 'urgency',
-        header: ({ column }) => {
-          return (
-            <div
-              className="cursor-pointer select-none flex items-center gap-1"
-              onClick={column.getToggleSortingHandler()}
-            >
-              Urgency
-              {column.getIsSorted() ? (
-                column.getIsSorted() === 'asc' ? (
-                  <ChevronUpIcon className="h-4 w-4" />
-                ) : (
-                  <ChevronDownIcon className="h-4 w-4" />
-                )
-              ) : (
-                <CaretSortIcon className="h-4 w-4 text-gray-400" />
-              )}
-            </div>
-          );
-        },
-        sortingFn: (rowA, rowB) => {
-          const urgencyOrder = {
-            'Critical': 1,
-            'High': 2,
-            'Medium': 3,
-            'Low': 4,
-            'Informational': 5
-          };
-
-          const aValue = urgencyOrder[rowA.original.urgency] || 999;
-          const bValue = urgencyOrder[rowB.original.urgency] || 999;
-
-          return aValue - bValue;
-        }
-      },
-      {
-        accessorKey: 'estimate',
-        header: ({ column }) => {
-          return (
-            <div
-              className="cursor-pointer select-none flex items-center gap-1"
-              onClick={column.getToggleSortingHandler()}
-            >
-              Estimate
-              {column.getIsSorted() ? (
-                column.getIsSorted() === 'asc' ? (
-                  <ChevronUpIcon className="h-4 w-4" />
-                ) : (
-                  <ChevronDownIcon className="h-4 w-4" />
-                )
-              ) : (
-                <CaretSortIcon className="h-4 w-4 text-gray-400" />
-              )}
-            </div>
-          );
-        },
-        cell: ({ getValue }) => {
-          const value = getValue();
-          return value === "Variable" ? value : formatCurrency(value);
-        },
-        sortingFn: (rowA, rowB) => {
-          const getNumericValue = (value) => {
-            if (!value) return 0;
-            if (value === "Variable") return 0;
-            if (typeof value === 'number') return value;
-
-            const numericValue = parseFloat(value.toString().replace(/[$,]/g, ''));
-            return isNaN(numericValue) ? 0 : numericValue;
-          };
-
-          const aValue = getNumericValue(rowA.original.estimate);
-          const bValue = getNumericValue(rowB.original.estimate);
-
-          return aValue - bValue;
-        }
-      },
-    ],
-    []
-  )
-
-  const table = useReactTable({
-    data: processedFindings,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
-    },
-    enableSortingRemoval: true,
-    sortDescFirst: false,
-  })
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <p className="text-red-500">{error}</p>
-          <button
-            onClick={() => navigate('/')}
-            className="mt-4 text-blue-600 hover:text-blue-800"
-          >
-            Return to Files
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!file) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">File not found</p>
-        </div>
-      </div>
-    );
-  }
-
   const calculateTotalEstimate = () => {
     const analysis = getAnalysis();
     if (!analysis?.findings) return 0;
@@ -299,9 +162,11 @@ function ReportView() {
   };
 
   return (
-    <div className="container mx-auto bg-surface">
+    <div className="container mx-auto">
+      
+      <div className="bg-surface">
       {/* Simplify header to just the back button */}
-      <div className="flex items-center mb-6 ml-6">
+      <div className="flex items-center mb-6 ml-6 ">
         <button
           onClick={() => navigate('/')}
           className="inline-flex items-center text-gray-600 hover:text-gray-800"
@@ -322,10 +187,11 @@ function ReportView() {
           Back
         </button>
       </div>
+      </div>
 
 
       {file && file.ai_analysis && (
-        <div className="flex flex-col gap-4 pb-60 py-6 bg-surface">
+        <div className="flex flex-col gap-4 pb-60 py-6 ">
           <EstimateSummary
             address={getAnalysis()?.property?.address || 'No address available'}
             date={getAnalysis()?.property?.inspectionDate || 'No date available'}
@@ -341,135 +207,28 @@ function ReportView() {
             findings={getAnalysis()?.findings || []}
           />
 
-          {/* report contents */}
-          {/* Filter controls */}
-          
-            <div className="flex gap-4 mb-6 py-6 bg-surface">
-              <Select.Root value={filterCategory} onValueChange={setFilterCategory}>
-                <Select.Trigger
-                  className="inline-flex items-center justify-between rounded px-4 py-2 text-sm gap-2 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none"
-                  aria-label="Category"
-                >
-                  <Select.Value placeholder="Select a category" />
-                  <Select.Icon>
-                    <ChevronDownIcon />
-                  </Select.Icon>
-                </Select.Trigger>
+          <ReportSection
+            title="Summary"
+            findings={processedFindings}
+            filters={filters}
+            filterCategory={filterCategory}
+            setFilterCategory={setFilterCategory}
+            filterUrgency={filterUrgency}
+            setFilterUrgency={setFilterUrgency}
+            formatCurrency={formatCurrency}
+            
+          />
 
-                <Select.Portal>
-                  <Select.Content
-                    className="overflow-hidden bg-white rounded-md shadow-lg border border-gray-200"
-                    position="popper"
-                    sideOffset={5}
-                  >
-                    <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
-                      <ChevronUpIcon />
-                    </Select.ScrollUpButton>
-
-                    <Select.Viewport className="p-1">
-                      {filters.categories.map((category) => (
-                        <Select.Item
-                          key={category}
-                          value={category}
-                          className="relative flex items-center px-6 py-2 text-sm text-gray-700 rounded-sm
-                        "
-                        >
-                          <Select.ItemText>{category}</Select.ItemText>
-                          <Select.ItemIndicator className="absolute right-2 inline-flex items-center">
-                            <CheckIcon />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-
-              <Select.Root value={filterUrgency} onValueChange={setFilterUrgency}>
-                <Select.Trigger
-                  className="inline-flex items-center justify-between rounded px-4 py-2 text-sm gap-2 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none"
-                  aria-label="Urgency"
-                >
-                  <Select.Value placeholder="Select urgency" />
-                  <Select.Icon>
-                    <ChevronDownIcon />
-                  </Select.Icon>
-                </Select.Trigger>
-
-                <Select.Portal>
-                  <Select.Content
-                    className="overflow-hidden bg-white rounded-md shadow-lg border border-gray-200"
-                    position="popper"
-                    sideOffset={5}
-                  >
-                    <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
-                      <ChevronUpIcon />
-                    </Select.ScrollUpButton>
-
-                    <Select.Viewport className="p-1">
-                      {filters.urgencyLevels.map((level) => (
-                        <Select.Item
-                          key={level}
-                          value={level}
-                          className="relative flex items-center px-6 py-2 text-sm text-gray-700 rounded-sm hover:bg-gray-100 cursor-pointer outline-none data-[highlighted]:bg-gray-100"
-                        >
-                          <Select.ItemText>{level === 'all' ? 'All Urgency Levels' : level}</Select.ItemText>
-                          <Select.ItemIndicator className="absolute left-1 inline-flex items-center">
-                            <CheckIcon />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-
-                    <Select.ScrollDownButton className="flex items-center justify-center h-6 bg-white text-gray-700 cursor-default">
-                      <ChevronDownIcon />
-                    </Select.ScrollDownButton>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-            </div>
-
-          {/* Table */}
-          <div className="rounded-md border">
-            <table className="w-full">
-              <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id} className="border-b">
-                    {headerGroup.headers.map(header => (
-                      <th
-                        key={header.id}
-                        className="px-4 py-3 text-left text-sm font-medium text-gray-500 bg-gray-50"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map(row => (
-                  <tr key={row.id} className="border-b">
-                    {row.getVisibleCells().map(cell => (
-                      <td
-                        key={cell.id}
-                        className="px-4 py-3 text-sm text-gray-900"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          </div>
+          {/* <FindingsTable
+            findings={processedFindings}
+            filters={filters}
+            filterCategory={filterCategory}
+            setFilterCategory={setFilterCategory}
+            filterUrgency={filterUrgency}
+            setFilterUrgency={setFilterUrgency}
+            formatCurrency={formatCurrency}
+          /> */}
+        </div>
       )}
     </div>
   );

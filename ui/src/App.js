@@ -97,8 +97,8 @@ function App() {
           {/* OpenGraph tags here */}
         <meta property="og:title" content="Borough" />
         <meta property="og:description" content="Borough is an AI-powered property analysis tool that helps you understand your inspection reports and the cost of repairs." />
-        <meta property="og:image" content={openGraphImage} />
-        <meta property="og:url" content="https://borough-ai.com/opengraph-borough-12-14-2024.jpg" />
+        <meta property="og:image" content="https://borough-ai.com/opengraph-borough-12-14-2024.jpg" />
+        <meta property="og:url" content="https://borough-ai.com" />
         <meta property="og:type" content="website" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
