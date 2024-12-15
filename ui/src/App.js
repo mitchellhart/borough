@@ -19,6 +19,8 @@ import ReturnPage from './components/ReturnPage';
 import Account from './components/Account';
 import { useNavigate } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
+import openGraphImage from './assets/opengraph-borough-12-14-2024.jpg';
+
 
 
 
@@ -91,6 +93,14 @@ function App() {
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-title" content="Borough" />
         <link rel="manifest" href="/site.webmanifest" />
+
+          {/* OpenGraph tags here */}
+        <meta property="og:title" content="Borough" />
+        <meta property="og:description" content="Borough is an AI-powered property analysis tool that helps you understand your inspection reports and the cost of repairs." />
+        <meta property="og:image" content={openGraphImage} />
+        <meta property="og:url" content="https://borough-ai.com" />
+        <meta property="og:type" content="website" />
+
       </Helmet>
       
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#6D8671' }}>

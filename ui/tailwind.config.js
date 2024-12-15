@@ -10,6 +10,9 @@ module.exports = {
       },
       colors: {
         'surface': '#E6E2DD',
+        'brand-orange': '#FFB252',
+        'brand-green': '#395E44',
+        
       },
     },
   },
