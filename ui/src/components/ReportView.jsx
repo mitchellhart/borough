@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import EstimateSummary from './EstimateSummary';
+import ReportSummary from './ReportSummary';
 import ReportSection from './ReportSection';
 import { motion } from "motion/react"
 import {
@@ -165,8 +165,8 @@ function ReportView() {
     <div className="container mx-auto">
       
       <div className="bg-surface">
-      {/* Simplify header to just the back button */}
-      <div className="flex items-center mb-6 ml-6 ">
+
+      <div className="flex items-center ml-6 ">
         <button
           onClick={() => navigate('/')}
           className="inline-flex items-center text-gray-600 hover:text-gray-800"
@@ -191,8 +191,8 @@ function ReportView() {
 
 
       {file && file.ai_analysis && (
-        <div className="flex flex-col gap-4 pb-60 py-6 ">
-          <EstimateSummary
+        <div className="flex flex-col gap-4 pb-60">
+          <ReportSummary
             address={getAnalysis()?.property?.address || 'No address available'}
             date={getAnalysis()?.property?.inspectionDate || 'No date available'}
             inspector={getAnalysis()?.property?.inspectedBy?.name || 'No inspector available'}

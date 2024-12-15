@@ -6,7 +6,7 @@ import NavBar from './components/NavBar';
 import Auth from './components/Auth';
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import UserFiles from './components/UserFiles';
+import ReportsPreview from './components/ReportsPreview';
 import BoroughLogo from './assets/Borough-logo.svg';
 import ReportView from './components/ReportView';
 import ScrollToTop from './components/ScrollToTop';
@@ -164,7 +164,7 @@ function App() {
                         <div className="rounded-b-3xl sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
                       <div className="col-span-full" style={{ backgroundColor: '#E6E2DD' }}>
                         <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />
-                        <UserFiles ref={userFilesRef} />
+                        <ReportsPreview ref={userFilesRef} />
                       </div>
                       </div>
                     )}

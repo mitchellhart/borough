@@ -86,7 +86,7 @@ function NavBar({ onLoginClick, user }) {
       return (
         <button
           onClick={onLoginClick}
-          className="text-white font-bold px-4 py-2 rounded-2xl"
+          className="text-white text-base font-nohemi-medium px-4 py-2 rounded-2xl"
           style={{ color: '#395E44', border: '2px solid #395E44' }}
         >
           Login

@@ -1,0 +1,62 @@
+[
+  {
+    "city": "Sunnyvale, California",
+    "multiplierMin": 1.2,
+    "multiplierMax": 1.3,
+    "notes": "Consistently ranks highest in studies focusing on home improvement costs"
+  },
+  {
+    "city": "San Jose, California",
+    "multiplierMin": 1.15,
+    "multiplierMax": 1.25,
+    "notes": "High costs for contractors, materials, and permits in Silicon Valley"
+  },
+  {
+    "city": "San Francisco, California",
+    "multiplierMin": 1.1,
+    "multiplierMax": 1.2,
+    "notes": "Similar to San Jose, with high demand and expensive labor"
+  },
+  {
+    "city": "Fremont, California",
+    "multiplierMin": 1.1,
+    "multiplierMax": 1.2,
+    "notes": "Another Bay Area city with high home repair expenses"
+  },
+    {
+    "city": "Naperville, Illinois",
+    "multiplierMin": 1.1,
+    "multiplierMax": 1.2,
+    "notes": "Some studies place this Illinois city as surprisingly expensive for remodeling"
+  },
+  {
+    "city": "Chicago, Illinois",
+    "multiplierMin": 1.05,
+    "multiplierMax": 1.15,
+    "notes": "High costs for labor and materials in the Chicago metro area"
+  },
+  {
+    "city": "Los Angeles, California",
+    "multiplierMin": 1.05,
+    "multiplierMax": 1.15,
+    "notes": "While overall cost of living is high, home repair costs are slightly less extreme than the Bay Area"
+  },
+  {
+    "city": "Arlington/Alexandria, Virginia/Washington, D.C.",
+    "multiplierMin": 1.05,
+    "multiplierMax": 1.15,
+    "notes": "High contractor rates in the D.C. area push up repair costs"
+  },
+  {
+    "city": "Boston, Massachusetts",
+    "multiplierMin": 1.0,
+    "multiplierMax": 1.1,
+    "notes": "Generally in line with or slightly above the national average for home repairs"
+  },
+  {
+    "city": "Seattle, Washington",
+    "multiplierMin": 1.0,
+    "multiplierMax": 1.1,
+    "notes": "Similar to Boston, with home repair costs around the national average"
+  }
+]

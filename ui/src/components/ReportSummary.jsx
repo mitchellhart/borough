@@ -8,6 +8,7 @@ import {
   Title,
   Tooltip,
 } from 'chart.js';
+import costData from '../data/cost.json';
 
 // Register ChartJS components
 ChartJS.register(
@@ -18,7 +19,7 @@ ChartJS.register(
   Tooltip
 );
 
-// Add this custom hook before the EstimateSummary component
+// Add this custom hook before the ReportSummary component
 function useCountUp(end, duration = 1000) {
   const [count, setCount] = useState(0);
 
@@ -42,7 +43,7 @@ function useCountUp(end, duration = 1000) {
   return count;
 }
 
-function EstimateSummary(props) {
+function ReportSummary(props) {
   const { 
     address, 
     date, 
@@ -127,7 +128,7 @@ function EstimateSummary(props) {
   };
 
   return (
-      <div className="p-8 bg-surface">
+      <div className="p-8 rounded-b-2xl bg-surface">
       <div className="mb-12">
         <div className="flex justify-between items-start">
           <div>
@@ -171,17 +172,32 @@ function EstimateSummary(props) {
           </div>
         )}
 
-        <hr className="border-gray-200 my-20" />
+        <hr className="border-gray-300 my-10" />
 
         <div className="flex justify-between items-start mb-8">
-          <div className="max-w-2xl">
+          <div className="max-w-3xl">
             <h3 className="text-xl font-bold mb-4">Summary</h3>
-            <p className="text-gray-700">
+            <p className="text-gray-800 text-base">
               {summary}
             </p>
           </div>
-
-          
+          {/* Cost multiplier notice - shows for all reports */}
+          <div className="bg-orange-50 p-6 rounded-lg ml-8">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-base font-nohemi-medium text-orange-800">LOCATION COST FACTOR</h4>
+              <span className="text-lg font-nohemi-medium text-orange-800">
+                {(costData.find(city => city.city.includes('Seattle')) || {}).multiplierMax || '1.1'}X
+              </span>
+            </div>
+            <p className="text-base text-orange-800">
+              {costData && costData.some(city => address.includes('Seattle'))
+                ? `This property is located in Seattle, where construction and repair costs are typically ${
+                    (costData.find(city => city.city.includes('Seattle')) || {}).multiplierMax || '1.1'
+                  }x the national average.`
+                : "This property is located in an area where construction and repair costs are typically in line with the national average."
+              }
+            </p>
+          </div>
         </div>
 
         <div className="h-96 w-full mb-12">
@@ -199,4 +215,4 @@ function EstimateSummary(props) {
   );
 }
 
-export default EstimateSummary; 
+export default ReportSummary; 

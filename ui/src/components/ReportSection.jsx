@@ -1,6 +1,9 @@
 import React from 'react';
 import { motion } from "motion/react"
 import { ReactComponent as HammerIcon } from '../assets/hammer-ico.svg';
+import Hammer from '../assets/hammer-solid.svg';
+import HammerOutline from '../assets/hammer-outline.svg';
+import DIY from '../assets/DIY-icon.png';
 
 function ReportSection({
   title,
@@ -24,15 +27,15 @@ function ReportSection({
 
   return (
     <div className="mx-auto p-6 py-4">
-      <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full mb-6">
+      {/* <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full mb-6">
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
         <span>Exterior</span>
-      </div>
+      </div> */}
 
       {/* Column Headers */}
-      <div className="grid grid-cols-4 gap-8 py-4 text-gray-600 text-lg">
+      <div className="sticky top-5 grid grid-cols-4 gap-8 py-4 px-14 text-gray-600 text-lg bg-surface rounded-full mb-6 shadow-md">
         <div>What</div>
         <div>Repair</div>
         <div>Urgency</div>
@@ -47,7 +50,7 @@ function ReportSection({
             initial={{ y: 20 }}
             whileInView={{ y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-surface rounded-lg"
+            className="bg-surface rounded-lg p-6"
           >
             <div className="grid grid-cols-4 gap-8 p-6  border-gray-200">
               <div className="text-lg">{finding.item}</div>
@@ -79,18 +82,18 @@ function ReportSection({
             {/* DIY Section */}
             <div className="grid grid-cols-4 gap-8 p-6 bg-white/30 m-4 rounded-lg">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 rounded-full">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-                    <path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                <div className="p-2 rounded-full">
+                  <img src={DIY} alt="DIY" className="w-16 h-16" />
                 </div>
                 <span className="font-medium">Do it yourself?</span>
               </div>
               <div className="flex items-center gap-1">
                 {[1,2,3,4].map((level) => (
-                  <HammerIcon 
+                  <img 
                     key={level}
-                    className={`w-10 h-10 ${level <= finding.difficultyScore ? 'text-blue-500' : 'text-gray-300'}`}
+                    src={level <= finding.difficultyScore ? Hammer : HammerOutline}
+                    alt="Difficulty level"
+                    className="w-6 h-6"
                   />
                 ))}
               </div>

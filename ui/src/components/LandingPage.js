@@ -118,21 +118,21 @@ function LandingPage() {
                                 {/* Right Column */}
                                 <div className="lg:col-span-1 space-y-6">
                                     <div className="flex items-center space-x-4 text-lg">
-                                        <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
-                                            <span className="text-white">✓</span>
-                                        </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
                                         <span>Detailed Cost Estimates</span>
                                     </div>
                                     <div className="flex items-center space-x-4 text-lg">
-                                        <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
-                                            <span className="text-white">✓</span>
-                                        </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
                                         <span>Interactive Report Dashboard</span>
                                     </div>
                                     <div className="flex items-center space-x-4 text-lg">
-                                        <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
-                                            <span className="text-white">✓</span>
-                                        </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"  className="size-10 stroke-[#395E44]  p-1">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
                                         <span>Priority Ranked Findings</span>
                                     </div>
                                 </div>
@@ -239,7 +239,7 @@ function LandingPage() {
                         <SwiperSlide key={index} style={{ width: slide.width }}>
                             {slide.type === 'text' ? (
                                 <div
-                                    style={{ 
+                                    style={{
                                         backgroundColor: slide.color,
                                         padding: '20px',
                                         borderRadius: '150px',
@@ -257,7 +257,7 @@ function LandingPage() {
                                 <img
                                     src={slide.content}
                                     alt={`slide-${index}`}
-                                    style={{ 
+                                    style={{
                                         width: '100%',
                                         height: '250px',
                                         objectFit: 'cover',
