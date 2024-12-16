@@ -23,7 +23,7 @@ async function sendEmail(userEmail) {
     port: 465,
     auth: {
       user: 'mitchellhart@gmail.com',
-      pass: 'ngmk uuko kjbl ifoh'
+      pass: process.env.EMAIL_KEY
     }
   })
   const info = await transporter.sendMail({

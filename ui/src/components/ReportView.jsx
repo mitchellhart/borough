@@ -13,6 +13,7 @@ import {
 import * as Select from '@radix-ui/react-select';
 import { ChevronDownIcon, ChevronUpIcon, CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
 import FindingsTable from './FindingsTable';
+import NegotiationGuide from './NegotiationGuide';
 
 function ReportView() {
   const { fileId } = useParams();
@@ -219,6 +220,8 @@ function ReportView() {
             
           />
 
+          
+
           {/* <FindingsTable
             findings={processedFindings}
             filters={filters}
@@ -228,6 +231,10 @@ function ReportView() {
             setFilterUrgency={setFilterUrgency}
             formatCurrency={formatCurrency}
           /> */}
+
+          <NegotiationGuide 
+            totalEstimate={calculateTotalEstimate()}
+          />
         </div>
       )}
     </div>
