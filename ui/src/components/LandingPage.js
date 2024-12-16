@@ -179,12 +179,12 @@ function LandingPage() {
             </div>
 
             <div className="relative rounded-3xl sm:p-8 my-10 h-auto sm:h-[700px] relative" style={{ backgroundColor: '#E6E2DD' }}>
-                <div className="mx-auto max-w-6xl px-4 my-10 py-12">
+                <div className="mx-auto max-w-6xl px-4 my-10 py-5">
                     {/* Mobile Image - Shows on top for mobile */}
                     <div className="w-full h-[300px] lg:hidden rounded-xl overflow-hidden mb-8">
                         <img
                             src={asset2}
-                            alt="debug"
+                            alt="Report Preview"
                             className="w-full h-full object-cover"
                         />
                     </div>
@@ -288,7 +288,7 @@ function LandingPage() {
             </div>
 
             <div className="rounded-3xl sm:p-8 my-10 h-auto sm:h-[700px] relative" style={{ backgroundColor: '#E6E2DD' }}>
-                <div className="mx-auto max-w-6xl px-4 my-10 py-12">
+                <div className="mx-auto max-w-6xl px-4 my-10 py-5">
                     {/* Mobile Image - Shows on top for mobile */}
                     <div className="w-full h-[300px] lg:hidden rounded-xl overflow-hidden mb-8">
                         <img
