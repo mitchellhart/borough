@@ -178,32 +178,50 @@ function LandingPage() {
                 </Swiper>
             </div>
 
-            <div className="relative rounded-3xl sm:p-8 my-10 h-[700px] relative" style={{ backgroundColor: '#E6E2DD' }}>
+            <div className="relative rounded-3xl sm:p-8 my-10 h-auto sm:h-[700px] relative" style={{ backgroundColor: '#E6E2DD' }}>
                 <div className="mx-auto max-w-6xl px-4 my-10 py-12">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[500px]">
+                    {/* Mobile Image - Shows on top for mobile */}
+                    <div className="w-full h-[300px] lg:hidden rounded-xl overflow-hidden mb-8">
+                        <img
+                            src={asset2}
+                            alt="debug"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+
+                    {/* Text Content - Shows below image on mobile */}
+                    <div className="flex flex-col lg:hidden mb-8 space-y-6">
+                        <img
+                            src={waveIllo}
+                            alt="Borough Logo"
+                            className="w-32 sm:w-48 ml-0 sm:ml-10"
+                        />
+                        <h1 className="text-[#395E44] text-3xl sm:text-4xl font-nohemi leading-tight">
+                            Goodbye to Overly Complex Reports
+                        </h1>
+                        <p className="text-[#395E44] text-lg sm:text-xl font-nohemi leading-tight">
+                            Borough platform translates complex inspection jargon and into a simple, actionable insights, helping you understand what really matters.
+                        </p>
+                    </div>
+
+                    {/* Desktop Layout - Hidden on mobile */}
+                    <div className="hidden lg:grid grid-cols-2 gap-12 items-center min-h-[500px]">
                         {/* Left Column */}
-                        <div className="lg:col-span-1 space-y-6">
+                        <div className="space-y-6">
                             <img
                                 src={waveIllo}
                                 alt="Borough Logo"
-                                className="w-48 ml-10 mb-6"
+                                className="w-48 ml-10"
                             />
-                            <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-5xl font-nohemi leading-tight">
+                            <h1 className="text-[#395E44] text-5xl font-nohemi leading-tight">
                                 Goodbye to Overly Complex Reports
                             </h1>
-                            <p className="text-[#395E44] text-xl sm:text-xl lg:text-xl font-nohemi leading-tight">
+                            <p className="text-[#395E44] text-xl font-nohemi leading-tight">
                                 Borough platform translates complex inspection jargon and into a simple, actionable insights, helping you understand what really matters.
                             </p>
-                            {/* <button
-                                onClick={() => navigate('/subscribe')}
-                                className="bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-2xl text-lg font-bold hover:bg-opacity-90 transition-colors mt-8"
-                            >
-                                View Sample Report
-                            </button> */}
                         </div>
 
-                        {/* No Right Column here */}
-
+                        {/* Right Column */}
                         <div className="absolute w-1/2 right-0 top-0 h-[675px] rounded-r-xl m-[13px] overflow-hidden">
                             <img
                                 src={asset2}
@@ -213,7 +231,6 @@ function LandingPage() {
                         </div>
                     </div>
                 </div>
-
             </div>
 
 
@@ -270,29 +287,62 @@ function LandingPage() {
                 </Swiper>
             </div>
 
-            <div className="rounded-3xl sm:p-8 my-10 h-[700px] relative" style={{ backgroundColor: '#E6E2DD' }}>
+            <div className="rounded-3xl sm:p-8 my-10 h-auto sm:h-[700px] relative" style={{ backgroundColor: '#E6E2DD' }}>
                 <div className="mx-auto max-w-6xl px-4 my-10 py-12">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[500px]">
+                    {/* Mobile Image - Shows on top for mobile */}
+                    <div className="w-full h-[300px] lg:hidden rounded-xl overflow-hidden mb-8">
+                        <img
+                            src={asset1}
+                            alt="debug"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+
+                    {/* Mobile Text Content - Shows below image */}
+                    <div className="flex flex-col lg:hidden mb-8 space-y-6">
+                        <img
+                            src={sortIllo}
+                            alt="Illustration of two arrows pointing in opposite directions"
+                            className="w-24 ml-0 sm:ml-10"
+                        />
+                        <h1 className="text-[#395E44] text-3xl sm:text-4xl font-nohemi leading-tight">
+                            Know what needs to get done first...
+                        </h1>
+                        <p className="text-[#395E44] text-lg sm:text-xl font-nohemi leading-tight">
+                            ...and what can wait. Borough prioritizes repairs tasks by urgency so you know what's an immediate cost and what can be saved for later.
+                        </p>
+                        <button
+                            onClick={() => navigate('/subscribe')}
+                            className="hidden lg:block bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-2xl text-lg font-bold hover:bg-opacity-90 transition-colors mt-8"
+                        >
+                            Sign Up Now
+                        </button>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden lg:grid grid-cols-2 gap-12 items-center min-h-[500px]">
                         {/* Left Column */}
-                        <div className="lg:col-span-1 space-y-6">
+                        <div className="space-y-6">
                             <img
                                 src={sortIllo}
                                 alt="Illustration of two arrows pointing in opposite directions"
-                                className="w-24 ml-10 mb-6"
+                                className="w-24 ml-10"
                             />
-                            <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-5xl font-nohemi leading-tight">
+                            <h1 className="text-[#395E44] text-5xl font-nohemi leading-tight">
                                 Know what needs to get done first...
                             </h1>
-                            <p className="text-[#395E44] text-xl sm:text-xl lg:text-xl font-nohemi leading-tight">
-                                ...and what can wait. Borough prioritizes repairs tasks by urgency so you know what’s an immediate cost and what can be saved for later.
+                            <p className="text-[#395E44] text-xl font-nohemi leading-tight">
+                                ...and what can wait. Borough prioritizes repairs tasks by urgency so you know what's an immediate cost and what can be saved for later.
                             </p>
                             <button
                                 onClick={() => navigate('/subscribe')}
-                                className="bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-2xl text-lg font-bold hover:bg-opacity-90 transition-colors mt-8"
+                                className="hidden lg:block bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-2xl text-lg font-bold hover:bg-opacity-90 transition-colors mt-8"
                             >
                                 Sign Up Now
                             </button>
                         </div>
+
+                        {/* Right Column */}
                         <div className="absolute w-1/2 right-0 top-0 h-[675px] rounded-r-xl m-[13px] overflow-hidden">
                             <img
                                 src={asset1}
