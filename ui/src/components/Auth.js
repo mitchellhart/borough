@@ -15,6 +15,7 @@ function Auth({ onClose = () => {}, initialMode = 'login', initialEmail = '', on
   const auth = getAuth();
   const navigate = useNavigate();
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');

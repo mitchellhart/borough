@@ -12,10 +12,33 @@ const OpenAI = require('openai');
 const { type } = require('os');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { updateUserSubscription, getUserSubscriptionStatus, pool } = require('./routes/users');
+const nodeMailer = require('nodemailer');
+
+
+
+async function sendEmail(userEmail) {
+  const transporter = nodeMailer.createTransport({
+    secure: true,
+    host: 'smtp.gmail.com',
+    port: 465,
+    auth: {
+      user: 'mitchellhart@gmail.com',
+      pass: 'ngmk uuko kjbl ifoh'
+    }
+  })
+  const info = await transporter.sendMail({
+    from: 'Borough <mitchellhart@gmail.com>',
+    to: 'mitch@superfort.tv',
+    subject: 'Welcome to Borough!',
+    html: `<h1>Hello, you have a new user: ${userEmail}</h1>`
+  })
+  console.log('Message sent: %s', info.messageId);
+}
+
 
 const uploadsDir = 'uploads';
-if (!fs.existsSync(uploadsDir)){
-    fs.mkdirSync(uploadsDir);
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
 }
 
 const firebaseConfig = {
@@ -67,7 +90,7 @@ const app = express();
 
 // FIRST: Set up CORS middleware before any routes
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
+  origin: process.env.NODE_ENV === 'production'
     ? ['https://borough-ai.com', 'https://borough-ai.onrender.com']
     : 'http://localhost:3000',
   credentials: true,
@@ -111,14 +134,6 @@ const webhookRoutes = require('./routes/webhook');
 app.use('/api/webhook', webhookRoutes);
 
 
-// Initialize PostgreSQL connection pool
-// const pool = new Pool({
-//   user: process.env.POSTGRES_USER,
-//   host: process.env.POSTGRES_HOST,
-//   database: process.env.POSTGRES_DB,
-//   password: process.env.POSTGRES_PASSWORD,
-//   port: process.env.POSTGRES_PORT || 5432,
-// });
 
 // NOW initialize and use the files router (after pool and auth are defined)
 const filesRouter = require('./routes/files')(pool, authenticateUser);
@@ -172,7 +187,7 @@ pool.query(`
   )
 `).then(result => {
   console.log('Users table exists:', result.rows[0].exists);
-  
+
   // If table exists, let's also check its structure
   if (result.rows[0].exists) {
     return pool.query(`
@@ -222,7 +237,7 @@ pool.query(`
 app.post('/api/save-email', async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     console.log('Received email save request:', { email });
 
     // Basic email validation
@@ -258,9 +273,9 @@ app.post('/api/save-email', async (req, res) => {
       stack: error.stack,
       email: req.body.email
     });
-    
+
     // Send more specific error message
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to save email',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -381,15 +396,15 @@ app.get('/api/files', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.uid;
     console.log('Attempting to fetch files for userId:', userId);
-    
+
     const result = await pool.query(
       'SELECT * FROM files WHERE user_id = $1 ORDER BY upload_date DESC',
       [userId]
     );
-    
+
     // console.log('Query executed. Number of files found:', result.rows.length);
     // console.log('Files:', result.rows);
-    
+
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching files:', error);
@@ -397,28 +412,6 @@ app.get('/api/files', authenticateUser, async (req, res) => {
   }
 });
 
-// DUPLICATED IN STRIPE.JS
-// app.get('/api/session-status', async (req, res) => {
-//   try {
-//     const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-    
-//     // Add this block to update subscription when session is complete
-//     if (session.status === 'complete') {
-//       const userId = session.metadata?.userId;
-//       if (userId) {
-//         await updateUserSubscription(userId);
-//       }
-//     }
-
-//     res.json({
-//       status: session.status,
-//       customer_email: session.customer_details?.email
-//     });
-//   } catch (error) {
-//     console.error('Stripe session status error:', error);
-//     res.status(500).json({ error: 'Failed to get session status' });
-//   }
-// });
 
 // Add this BEFORE the catch-all route
 app.get('/api/subscription-status', authenticateUser, async (req, res) => {
@@ -428,14 +421,14 @@ app.get('/api/subscription-status', authenticateUser, async (req, res) => {
       userId: userId,
       userEmail: req.user.email
     });
-    
+
     const subscriptionStatus = await getUserSubscriptionStatus(userId);
     console.log('Sending subscription status response:', subscriptionStatus);
-    
+
     res.json(subscriptionStatus);
   } catch (error) {
     console.error('Error fetching subscription status:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       status: 'error',
       message: 'Failed to fetch subscription status'
     });
@@ -567,13 +560,13 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
     // Call OpenAI API
     const completion = await openai.beta.chat.completions.parse({
       messages: [
-        { 
-          role: "system", 
-          content: "You are a powerful home inspector software that analyzes inspection reports. Please read the report data carefully and identify each item reported and shares back helpful and accurate information in the format specified below. Please look at the provided report and share your best answers in the format provided. If you cannot find information for a given category, simply state 'No inspected'." 
+        {
+          role: "system",
+          content: "You are a powerful home inspector software that analyzes inspection reports. Please read the report data carefully and identify each item reported and shares back helpful and accurate information in the format specified below. Please look at the provided report and share your best answers in the format provided. If you cannot find information for a given category, simply state 'No inspected'."
         },
-        { 
-          role: "user", 
-          content: file.text_content 
+        {
+          role: "user",
+          content: file.text_content
         }
       ],
       model: "gpt-4o-2024-11-20",  // change model here
@@ -598,14 +591,14 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
                     required: ["name", "license"],
                     additionalProperties: false
                   },
-                  summary: { 
+                  summary: {
                     type: "string",
-                    description : "A summary of the entire inspection report in 3 sentances."
-                   },
-                  shortSummary: { 
+                    description: "A summary of the entire inspection report in 3 sentances."
+                  },
+                  shortSummary: {
                     type: "string",
-                    description : "A brief summary of the entire inspection report in one short sentance."
-                   }
+                    description: "A brief summary of the entire inspection report in one short sentance."
+                  }
                 },
                 required: ["address", "inspectionDate", "inspectedBy", "summary", "shortSummary"],
                 additionalProperties: false
@@ -637,18 +630,18 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
                     },
                     urgency: { type: "integer" },
                     estimate: { type: "integer" },
-                    difficultyScore: { 
+                    difficultyScore: {
                       type: "integer",
                       description: "How difficult this issue is to fix by yourself (DIY). Answer 1-5"
-                     },
-                    difficultyDescription: { 
+                    },
+                    difficultyDescription: {
                       type: "string",
                       description: "Briefly explaing in how difficult this issue is to fix withough a professional or speciized tools. If it is easy, explain why. If it is hard, explain why."
-                     },
-                    hoursToFix: { 
+                    },
+                    hoursToFix: {
                       type: "integer",
                       description: "How many estimatedhours it would take to fix this issue if done by a professional."
-                     },
+                    },
                   },
                   required: ["item", "issue", "recommendation", "category", "urgency", "estimate", "difficultyScore", "difficultyDescription", "hoursToFix"],
                   additionalProperties: false
@@ -661,7 +654,7 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
           strict: true
         }
       }
-      
+
     });
 
     console.log('OpenAI Response:', {
@@ -740,12 +733,12 @@ app.post('/api/link-auth', authenticateUser, async (req, res) => {
   try {
     const { email, authId } = req.body;
     console.log('Received link-auth request:', { email, authId }); // Debug log
-    
+
     // Verify that the authId matches the authenticated user
     if (req.user.uid !== authId) {
-      console.log('Auth mismatch:', { 
-        requestAuthId: authId, 
-        userUid: req.user.uid 
+      console.log('Auth mismatch:', {
+        requestAuthId: authId,
+        userUid: req.user.uid
       }); // Debug log
       return res.status(403).json({ error: 'Unauthorized' });
     }
@@ -760,16 +753,24 @@ app.post('/api/link-auth', authenticateUser, async (req, res) => {
        DO UPDATE SET 
          auth_id = EXCLUDED.auth_id,
          updated_at = CURRENT_TIMESTAMP
-       RETURNING *`,
+       RETURNING *, (xmax = 0) as is_new_user`,
       [email, authId, 'pending']
     );
 
     console.log('Database query result:', result.rows[0]); // Debug log
-    
-    res.json({ 
+
+    // Check if new user
+    if (result.rows[0].is_new_user) {
+      await sendEmail(result.rows[0].email)
+        .catch(e => console.log(e));
+    }
+
+    res.json({
       message: 'Auth linked successfully',
-      user: result.rows[0]
+      user: result.rows[0],
+      isNewUser: result.rows[0].is_new_user
     });
+
   } catch (error) {
     console.error('Error linking auth:', {
       message: error.message,
