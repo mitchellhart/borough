@@ -22,8 +22,6 @@ import LandingPage from './components/LandingPage';
 import openGraphImage from './assets/opengraph-borough-12-14-2024.jpg';
 
 
-
-
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -44,44 +42,82 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
   const userFilesRef = useRef();
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [credits, setCredits] = useState(0);
   const navigate = useNavigate();
 
   
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = async () => {
     // Refresh the UserFiles component
     userFilesRef.current?.refresh();
+    
+    // Fetch updated subscription status and credits
+    if (user) {
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch(`/api/subscription-status`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setSubscriptionStatus(data.status);
+        setCredits(data.credits || 0);
+      } catch (error) {
+        console.error('Error updating credits:', error);
+      }
+    }
   };
   
   useEffect(() => {
     const auth = getAuth();
+    console.log('Starting auth check...');
+    
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('Auth state changed, user:', user);
-      setUser(user);
+      console.log('Auth state changed, raw user:', user);
       
       if (user) {
+        setUser(user);
         try {
           const token = await user.getIdToken();
+          console.log('Got token:', !!token);
+          
           const response = await fetch(`/api/subscription-status`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
           });
           const data = await response.json();
-          console.log('Raw subscription response:', data);
-          console.log('Setting subscription status to:', data.status);
+          console.log('Subscription data:', {
+            rawData: data,
+            credits: data.credits,
+            typeofCredits: typeof data.credits
+          });
+          
           setSubscriptionStatus(data.status);
+          setCredits(data.credits || 0);
         } catch (error) {
           console.error('Error fetching subscription status:', error);
           setSubscriptionStatus(null);
+          setCredits(0);
         }
       } else {
+        console.log('No user found');
+        setUser(null);
         setSubscriptionStatus(null);
+        setCredits(0);
       }
     });
     
     return () => unsubscribe();
   }, []); 
+
+  console.log('Render conditions:', {
+    user: !!user,
+    subscriptionStatus,
+    credits,
+    shouldShowUpload: user && (subscriptionStatus === 'active' || credits > 0)
+  });
 
   return (
     <>
@@ -142,30 +178,72 @@ function App() {
 
                     {/* Subscription Status Content */}
                     {user && subscriptionStatus !== 'active' && (
-                      <div className="rounded-b-3xl sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
+                      <div className="sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
                         <div className="rounded-b-3xl p-4 sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
                           <div className="col-span-full text-center py-6">
-                            <h2 className="text-2xl font-bold text-[#395E44] mb-4">
-                              Subscribe to Access All Features
-                            </h2>
-                            <button
-                              onClick={() => navigate('/subscribe')}
-                              className="bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-full text-lg font-medium hover:bg-opacity-90 transition-colors"
-                            >
-                              Subscribe Now
-                            </button>
+                            {credits > 0 ? (
+                              // Show credits available
+                              <div>
+                                <h2 className="text-2xl font-bold text-[#395E44] mb-4">
+                                  You have {credits} credit{credits !== 1 ? 's' : ''} remaining
+                                </h2>
+                                <div className="flex justify-center gap-4">
+                                  <button
+                                    onClick={() => navigate('/payment', { state: { planType: 'subscription' } })}
+                                    className="bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-full text-lg font-medium hover:bg-opacity-90 transition-colors"
+                                  >
+                                    Subscribe for Access
+                                  </button>
+                                  <button
+                                    onClick={() => navigate('/payment', { state: { planType: 'one-time' } })}
+                                    className="border-2 border-[#395E44] text-[#395E44] py-4 px-8 rounded-full text-lg font-medium hover:bg-[#395E44] hover:text-white transition-colors"
+                                  >
+                                    Buy More Credits
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              // No credits available
+                              <div>
+                                <h2 className="text-2xl font-bold text-[#395E44] mb-4">
+                                  Subscribe or Buy Credits to analyze more reports.
+                                </h2>
+                                <div className="flex justify-center gap-4">
+                                  <button
+                                    onClick={() => navigate('/payment', { state: { planType: 'subscription' } })}
+                                    className="bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-full text-lg font-medium hover:bg-opacity-90 transition-colors"
+                                  >
+                                    Subscribe Now
+                                  </button>
+                                  <button
+                                    onClick={() => navigate('/payment', { state: { planType: 'one-time' } })}
+                                    className="border-2 border-[#395E44] text-[#395E44] py-4 px-8 rounded-full text-lg font-medium hover:bg-[#395E44] hover:text-white transition-colors"
+                                  >
+                                    Buy Single Credit
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                      </div>    
+                        </div>    
                       </div>   
                     )}
                     
-                    {/* File Upload and User Files */}
-                    {user && subscriptionStatus === 'active' && (
-                        <div className="rounded-b-3xl sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
-                      <div className="col-span-full" style={{ backgroundColor: '#E6E2DD' }}>
-                        <FileUpload onFileProcessed={() => userFilesRef.current?.refresh()} />
-                        <ReportsPreview ref={userFilesRef} />
+                    {/* File Upload */}
+                    {user && (subscriptionStatus === 'active' || credits > 0) && (
+                      <div className="sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
+                        <div className="col-span-full" style={{ backgroundColor: '#E6E2DD' }}>
+                          <FileUpload onFileProcessed={handleUploadSuccess} />
+                        </div>
                       </div>
+                    )}
+
+                    {/* Reports Preview - shown for all logged in users */}
+                    {user && (
+                      <div className="sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
+                        <div className="col-span-full" style={{ backgroundColor: '#E6E2DD' }}>
+                          <ReportsPreview ref={userFilesRef} />
+                        </div>
                       </div>
                     )}
 

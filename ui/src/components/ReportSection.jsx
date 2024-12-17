@@ -26,7 +26,7 @@ function ReportSection({
   };
 
   return (
-    <div className="mx-auto p-6 py-4">
+    <div className="mx-auto py-4">
       {/* <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full mb-6">
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

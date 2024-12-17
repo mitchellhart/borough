@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { getAuth } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout
@@ -16,8 +16,10 @@ stripePromise.catch(error => {
 });
 
 function PaymentForm() {
+  const location = useLocation();
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [planType, setPlanType] = useState(location.state?.planType || null);
   const [clientSecret, setClientSecret] = useState(null);
   const [couponCode, setCouponCode] = useState('');
   const navigate = useNavigate();
@@ -42,7 +44,10 @@ function PaymentForm() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
-        body: JSON.stringify({ couponId: couponCode }),
+        body: JSON.stringify({ 
+          couponId: couponCode,
+          paymentType: planType
+        }),
         credentials: 'include'
       });
 
@@ -69,7 +74,7 @@ function PaymentForm() {
       alert('Unable to initialize payment form. Please try again later.');
       throw error;
     }
-  }, [couponCode]);
+  }, [couponCode, planType]);
 
   useEffect(() => {
     const preventDefault = (e) => {
@@ -88,8 +93,12 @@ function PaymentForm() {
   }, []);
 
   const handleAuthSuccess = () => {
-    console.log('Auth success, showing checkout');
+    console.log('Auth success, showing payment selection');
     setShowAuth(false);
+  };
+
+  const handlePlanTypeSelect = (type) => {
+    setPlanType(type);
     setShowCheckout(true);
   };
 
@@ -147,7 +156,8 @@ function PaymentForm() {
       <div className="w-1/2 bg-white overflow-hidden flex flex-col">
         <div className="p-8 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-2xl font-semibold text-gray-800">
-            {showCheckout ? 'Subscribe to Borough' : 'Create Your Account'}
+            {showCheckout ? 'Checkout' : 
+             !showAuth ? 'Choose Your Plan' : 'Create Your Account'}
           </h2>
         </div>
 
@@ -159,24 +169,109 @@ function PaymentForm() {
               onAuthSuccess={handleAuthSuccess}
             />
           )}
+          
+          {!showAuth && !showCheckout && (
+            <div className="p-8 space-y-6">
+              <div 
+                onClick={() => handlePlanTypeSelect('subscription')}
+                className="p-6 border rounded-lg cursor-pointer hover:border-[#395E44] transition-colors"
+              >
+                <h3 className="text-xl font-semibold mb-2">Monthly Subscription</h3>
+                <p className="text-gray-600">$35/month</p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center">
+                    <span className="text-[#395E44] mr-2">✔</span>
+                    Up to 20 report analysis each month
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-[#395E44] mr-2">✔</span>
+                    Cancel anytime
+                  </li>
+                </ul>
+              </div>
+
+              <div 
+                onClick={() => handlePlanTypeSelect('one-time')}
+                className="p-6 border rounded-lg cursor-pointer hover:border-[#395E44] transition-colors"
+              >
+                <h3 className="text-xl font-semibold mb-2">One-Time Payment</h3>
+                <p className="text-gray-600">$20.00 per report</p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center">
+                    <span className="text-[#395E44] mr-2">✔</span>
+                    Single report analysis
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-[#395E44] mr-2">✔</span>
+                    No recurring charges
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+
           {showCheckout && (
             <div className="p-8 h-full">
-              
-              <EmbeddedCheckoutProvider
-                stripe={stripePromise}
-                options={{ fetchClientSecret }}
-              >
-                
-                <EmbeddedCheckout
-                  className="h-full"
-                  onComplete={() => console.log('Checkout completed successfully')}
-                  onLoadError={(error) => {
-                    console.error('Checkout load error:', error);
-                    alert('Unable to load payment form. Please try again later.');
+              {planType === 'subscription' ? (
+                <EmbeddedCheckoutProvider
+                  stripe={stripePromise}
+                  options={{ fetchClientSecret }}
+                >
+                  <EmbeddedCheckout
+                    className="h-full"
+                    onComplete={() => console.log('Checkout completed successfully')}
+                    onLoadError={(error) => {
+                      console.error('Checkout load error:', error);
+                      alert('Unable to load payment form. Please try again later.');
+                    }}
+                  />
+                </EmbeddedCheckoutProvider>
+              ) : (
+                <EmbeddedCheckoutProvider
+                  stripe={stripePromise}
+                  options={{ 
+                    fetchClientSecret: async () => {
+                      // Different endpoint or parameters for one-time payment
+                      try {
+                        const idToken = await getAuth().currentUser.getIdToken();
+                        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create-one-time-checkout`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${idToken}`
+                          },
+                          body: JSON.stringify({ 
+                            couponId: couponCode,
+                            planType: planType
+                          }),
+                          credentials: 'include'
+                        });
+
+                        if (!response.ok) {
+                          const errorText = await response.text();
+                          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+
+                        const data = await response.json();
+                        return data.clientSecret;
+                      } catch (error) {
+                        console.error('One-time checkout error:', error);
+                        alert('Unable to initialize payment form. Please try again later.');
+                        throw error;
+                      }
+                    }
                   }}
-                />
-              </EmbeddedCheckoutProvider>
-              
+                >
+                  <EmbeddedCheckout
+                    className="h-full"
+                    onComplete={() => console.log('One-time payment completed successfully')}
+                    onLoadError={(error) => {
+                      console.error('One-time checkout load error:', error);
+                      alert('Unable to load payment form. Please try again later.');
+                    }}
+                  />
+                </EmbeddedCheckoutProvider>
+              )}
             </div>
           )}
         </div>

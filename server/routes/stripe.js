@@ -39,126 +39,6 @@ async function updateUserSubscription(userId) {
   }
 }
 
-  // Webhook route - needs raw body
-  router.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    
-    try {
-      const event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-
-      console.log('Successfully constructed event:', event.type);
-
-      // Handle the event
-      switch (event.type) {
-        case 'checkout.session.completed':
-          const session = event.data.object;
-          console.log('Checkout Session Data:', {
-            id: session.id,
-            metadata: session.metadata,
-            subscription: session.subscription,
-            customer: session.customer
-          });
-          
-          const userId = session.metadata?.userId;
-          if (userId) {
-            try {
-              // First try to get the subscription details
-              const subscription = await stripe.subscriptions.retrieve(session.subscription);
-              
-              // Update user with subscription details
-              const result = await pool.query(
-                `UPDATE users 
-                 SET subscription_status = $1,
-                     stripe_subscription_id = $2,
-                     stripe_customer_id = $3,
-                     updated_at = CURRENT_TIMESTAMP 
-                 WHERE auth_id = $4 
-                 RETURNING *`,
-                ['active', session.subscription, session.customer, userId]
-              );
-
-              console.log('Updated user subscription details:', {
-                userId,
-                subscriptionId: session.subscription,
-                customerId: session.customer,
-                result: result.rows[0]
-              });
-            } catch (error) {
-              console.error('Error updating subscription details:', error);
-              throw error;
-            }
-          } else {
-            console.log('No userId found in session metadata:', session);
-          }
-          break;
-        
-        case 'customer.subscription.created':
-          const newSubscription = event.data.object;
-          console.log('New Subscription Created:', {
-            id: newSubscription.id,
-            customer: newSubscription.customer,
-            status: newSubscription.status
-          });
-          
-          // Try to find user by customer ID if metadata is missing
-          if (!newSubscription.metadata?.userId) {
-            try {
-              const userResult = await pool.query(
-                'SELECT auth_id FROM users WHERE stripe_customer_id = $1',
-                [newSubscription.customer]
-              );
-              if (userResult.rows[0]) {
-                newSubscription.metadata = { 
-                  userId: userResult.rows[0].auth_id 
-                };
-              }
-            } catch (error) {
-              console.error('Error finding user by customer ID:', error);
-            }
-          }
-          
-          if (newSubscription.metadata?.userId) {
-            await pool.query(
-              `UPDATE users 
-               SET subscription_status = $1,
-                   stripe_subscription_id = $2,
-                   updated_at = CURRENT_TIMESTAMP 
-               WHERE auth_id = $3`,
-              ['active', newSubscription.id, newSubscription.metadata.userId]
-            );
-          }
-          break;
-          
-        case 'customer.subscription.updated':
-          const subscription = event.data.object;
-          console.log('Subscription Data:', {
-            id: subscription.id,
-            metadata: subscription.metadata
-          });
-          
-          const subUserId = subscription.metadata?.userId;
-          if (subUserId) {
-            await updateUserSubscription(subUserId);
-          } else {
-            console.log('No userId found in subscription metadata:', subscription);
-          }
-          break;
-          
-        default:
-          console.log(`Unhandled event type ${event.type}`);
-      }
-
-      res.json({ received: true });
-    } catch (err) {
-      console.error('Webhook Error:', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-  });
-
 module.exports = function(authenticateUser) {
   // Regular routes that need authentication
   router.post('/create-checkout-session', authenticateUser, async (req, res) => {
@@ -344,6 +224,89 @@ module.exports = function(authenticateUser) {
       });
       res.status(500).json({ 
         error: 'Failed to cancel subscription', 
+        details: error.message 
+      });
+    }
+  });
+
+  // New endpoint for one-time payments
+  router.post('/create-one-time-checkout', authenticateUser, async (req, res) => {
+    try {
+      const userId = req.user.uid;
+      const { couponId } = req.body;
+
+      console.log('Creating one-time checkout session for user:', {
+        userId: userId,
+        userEmail: req.user.email
+      });
+
+      // First, create or retrieve a customer
+      let customer;
+      try {
+        const customerResult = await pool.query(
+          'SELECT stripe_customer_id FROM users WHERE auth_id = $1',
+          [userId]
+        );
+
+        if (customerResult.rows[0]?.stripe_customer_id) {
+          customer = customerResult.rows[0].stripe_customer_id;
+        } else {
+          const newCustomer = await stripe.customers.create({
+            email: req.user.email,
+            metadata: { userId: userId }
+          });
+          customer = newCustomer.id;
+          
+          await pool.query(
+            'UPDATE users SET stripe_customer_id = $1 WHERE auth_id = $2',
+            [customer, userId]
+          );
+        }
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
+
+      // Create one-time payment session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: process.env.STRIPE_ONE_TIME_PRICE_ID, // You'll need to add this to your .env
+            quantity: 1,
+          },
+        ],
+        mode: 'payment', // Changed to 'payment' instead of 'subscription'
+        allow_promotion_codes: true,
+        discounts: couponId ? [{
+          coupon: couponId,
+        }] : undefined,
+        ui_mode: 'embedded',
+        customer: customer,
+        return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+        metadata: {
+          userId: userId,
+          planType: 'one-time'
+        }
+      });
+
+      console.log('One-time checkout session created successfully:', {
+        sessionId: session.id,
+        clientSecret: !!session.client_secret
+      });
+
+      res.json({
+        clientSecret: session.client_secret
+      });
+    } catch (error) {
+      console.error('Error creating one-time checkout session:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      res.status(500).json({ 
+        error: 'Failed to create one-time checkout session',
         details: error.message 
       });
     }

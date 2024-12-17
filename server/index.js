@@ -11,9 +11,9 @@ const { PdfReader } = require('pdfreader');
 const OpenAI = require('openai');
 const { type } = require('os');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { updateUserSubscription, getUserSubscriptionStatus, pool } = require('./routes/users');
-const nodeMailer = require('nodemailer');
+const { updateUserSubscription, getUserSubscriptionStatus, canAnalyzeReport, deductCredit, pool } = require('./routes/users');
 
+const nodeMailer = require('nodemailer');
 
 
 async function sendEmail(userEmail) {
@@ -98,7 +98,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use('/api/webhook', express.raw({ type: 'application/json' }));
 
 // Define authentication middleware
 const authenticateUser = async (req, res, next) => {
@@ -118,20 +117,17 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
-// AFTER: Add body parsing middleware
+// 1. First, mount the webhook route (before any body parsers)
+const webhookRoutes = require('./routes/webhook');
+app.use('/api/webhook', webhookRoutes);
+
+// 2. Then add your body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// THEN: Mount Stripe routes (including webhook) BEFORE body parsing
+// 3. Finally mount other routes including Stripe routes
 const stripeRoutes = require('./routes/stripe')(authenticateUser);
 app.use('/api', stripeRoutes);
-
-
-// Initialize routes with middleware
-const webhookRoutes = require('./routes/webhook');
-
-// Mount routes
-app.use('/api/webhook', webhookRoutes);
 
 
 
@@ -205,16 +201,22 @@ pool.query(`
 
 // Create table only if it doesn't exist
 pool.query(`
+  -- First create the table if it doesn't exist
   CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     auth_id TEXT UNIQUE,
     subscription_status TEXT DEFAULT 'pending',
+    credits INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 
-  -- Add trigger to automatically update updated_at
+  -- Then add the credits column if it doesn't exist
+  ALTER TABLE users 
+  ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0;
+
+  -- Your existing trigger setup
   CREATE OR REPLACE FUNCTION update_updated_at_column()
   RETURNS TRIGGER AS $$
   BEGIN
@@ -230,7 +232,7 @@ pool.query(`
       FOR EACH ROW
       EXECUTE FUNCTION update_updated_at_column();
 `).then(() => {
-  console.log('Users table setup completed');
+  console.log('Users table setup completed with credits column');
 }).catch(err => console.error('Error setting up users table:', err));
 
 // Add the email saving endpoint
@@ -417,13 +419,8 @@ app.get('/api/files', authenticateUser, async (req, res) => {
 app.get('/api/subscription-status', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.uid;
-    console.log('Checking subscription status for user:', {
-      userId: userId,
-      userEmail: req.user.email
-    });
-
+   
     const subscriptionStatus = await getUserSubscriptionStatus(userId);
-    console.log('Sending subscription status response:', subscriptionStatus);
 
     res.json(subscriptionStatus);
   } catch (error) {
@@ -535,6 +532,15 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.uid;
     const fileId = req.params.fileId;
+    
+
+    const accessCheck = await canAnalyzeReport(userId);
+    if (!accessCheck.canAnalyze) {
+      return res.status(403).json({ 
+        error: 'Access denied', 
+        reason: accessCheck.reason 
+      });
+    }
 
     // Fetch the file and its text content
     const result = await pool.query(
@@ -664,6 +670,9 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
       usage: completion.usage
     });
 
+    if (accessCheck.reason === 'Has credits') {
+      await deductCredit(userId);
+    }
     // Update the ai_analysis column in the files table
     const updateResult = await pool.query(
       `UPDATE files 
@@ -720,11 +729,6 @@ app.get('/api/files/:fileId/analysis', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch analysis' });
   }
 });
-
-
-// IMPORTANT: Move this AFTER the webhook route
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 
 

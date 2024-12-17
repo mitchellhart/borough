@@ -56,18 +56,49 @@ router.post('/', express.raw({type: 'application/json'}), async (req, res) => {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object;
-        console.log('Checkout Session Data:', {
-          id: session.id,
-          metadata: session.metadata
+        console.log('1. Webhook: Checkout Session Data:', {
+          mode: session.mode,
+          paymentStatus: session.payment_status,
+          metadata: session.metadata,
+          status: session.status
         });
         
-        // Get userId from metadata
         const userId = session.metadata?.userId;
+        console.log('1.5. UserId from metadata:', userId);
+        
         if (userId) {
-          console.log('Updating subscription for userId:', userId);
-          await updateUserSubscription(userId);
-        } else {
-          console.log('No userId found in session metadata:', session);
+          try {
+            console.log('1.7. Payment mode and status:', {
+              mode: session.mode,
+              paymentStatus: session.payment_status
+            });
+            
+            if (session.mode === 'payment' && session.payment_status === 'paid') {
+              console.log('2. Processing one-time payment for userId:', userId);
+              // Add one credit for one-time payment
+              const result = await pool.query(
+                `UPDATE users 
+                 SET credits = credits + 1,
+                     updated_at = CURRENT_TIMESTAMP 
+                 WHERE auth_id = $1 
+                 RETURNING credits`,
+                [userId]
+              );
+              console.log('3. Credit update result:', {
+                success: !!result.rows[0],
+                newCredits: result.rows[0]?.credits
+              });
+            } else if (session.mode === 'subscription') {
+              console.log('4. Processing subscription payment');
+              await updateUserSubscription(userId);
+            }
+          } catch (error) {
+            console.error('5. Error processing payment:', {
+              error: error.message,
+              userId,
+              sessionId: session.id
+            });
+          }
         }
         break;
       
