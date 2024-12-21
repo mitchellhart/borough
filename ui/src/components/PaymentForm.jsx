@@ -20,12 +20,12 @@ function PaymentForm() {
   const navigate = useNavigate();
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  
+
   // Get the plan type from router state or localStorage
   const [planType, setPlanType] = useState(location.state?.planType || localStorage.getItem('selectedPlan') || null);
   const [clientSecret, setClientSecret] = useState(null);
   const [couponCode, setCouponCode] = useState('');
-  
+
   const price = planType === 'subscription' ? 35 : 20;
 
   useEffect(() => {
@@ -36,7 +36,7 @@ function PaymentForm() {
       setShowAuth(true);
     }
     return () => localStorage.removeItem('selectedPlan');
-  
+
   }, []);
 
 
@@ -51,7 +51,7 @@ function PaymentForm() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           couponId: couponCode,
           paymentType: planType
         }),
@@ -116,34 +116,34 @@ function PaymentForm() {
         <div className="flex-1 flex flex-col justify-center">
           <img src={BoroughLogo} alt="Borough" className="w-24 mb-6" />
           <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-6xl font-nohemi leading-tight mb-8">
-            Analyze Your Home Inspection Report
+            Instant Estimate from Your Inspection Report
           </h1>
 
           {/* Feature list styled like landing page */}
           <div className="space-y-6">
             <div className="flex items-center space-x-4 text-lg">
-              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
-                <span className="text-white">✓</span>
-              </div>
-              <span>Instant AI Analysis</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span>Instant Estimate</span>
             </div>
             <div className="flex items-center space-x-4 text-lg">
-              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
-                <span className="text-white">✓</span>
-              </div>
-              <span>Detailed Cost Estimates</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span>Detailed Cost Breakdown</span>
             </div>
             <div className="flex items-center space-x-4 text-lg">
-              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
-                <span className="text-white">✓</span>
-              </div>
-              <span>Priority Rankings</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span>Negotiation Guide</span>
             </div>
             <div className="flex items-center space-x-4 text-lg">
-              <div className="w-6 h-6 rounded-full bg-[#395E44] flex items-center justify-center">
-                <span className="text-white">✓</span>
-              </div>
-              <span>Interactive Report Dashboard</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span>Agents never change your report</span>
             </div>
           </div>
         </div>
@@ -163,8 +163,8 @@ function PaymentForm() {
       <div className="w-1/2 bg-white overflow-hidden flex flex-col">
         <div className="p-8 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-2xl font-semibold text-gray-800">
-            {showCheckout ? 'Checkout' : 
-             !showAuth ? 'Choose Your Plan' : 'Create Your Account'}
+            {showCheckout ? 'Checkout' :
+              !showAuth ? 'Choose Your Plan' : 'Create Your Account'}
           </h2>
         </div>
 
@@ -176,10 +176,10 @@ function PaymentForm() {
               onAuthSuccess={handleAuthSuccess}
             />
           )}
-          
+
           {!showAuth && !showCheckout && (
             <div className="p-8 space-y-6">
-              <div 
+              <div
                 onClick={() => handlePlanTypeSelect('subscription')}
                 className="p-6 border rounded-lg cursor-pointer hover:border-[#395E44] transition-colors"
               >
@@ -197,7 +197,7 @@ function PaymentForm() {
                 </ul>
               </div>
 
-              <div 
+              <div
                 onClick={() => handlePlanTypeSelect('one-time')}
                 className="p-6 border rounded-lg cursor-pointer hover:border-[#395E44] transition-colors"
               >
@@ -236,7 +236,7 @@ function PaymentForm() {
               ) : (
                 <EmbeddedCheckoutProvider
                   stripe={stripePromise}
-                  options={{ 
+                  options={{
                     fetchClientSecret: async () => {
                       // Different endpoint or parameters for one-time payment
                       try {
@@ -247,7 +247,7 @@ function PaymentForm() {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${idToken}`
                           },
-                          body: JSON.stringify({ 
+                          body: JSON.stringify({
                             couponId: couponCode,
                             planType: planType
                           }),
