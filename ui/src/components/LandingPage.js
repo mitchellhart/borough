@@ -67,7 +67,7 @@ const mixedSlides = [
     },
     {
         type: 'text',
-        content: <span>The right home <br />at theright price</span>,
+        content: <span>The right home <br />at the right price</span>,
         width: '650px',
         color: '#FFB252',
     },
@@ -127,13 +127,13 @@ function LandingPage() {
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
-                                        <span>Interactive Report Dashboard</span>
+                                        <span>Negotiation Guide</span>
                                     </div>
                                     <div className="flex items-center space-x-4 text-lg">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"  className="size-10 stroke-[#395E44]  p-1">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
-                                        <span>Priority Ranked Findings</span>
+                                        <span>Agents never change your report</span>
                                     </div>
                                 </div>
                             </div>
@@ -361,7 +361,6 @@ function LandingPage() {
             </button>
 
             <Footer />
-            
 
 
         </>
