@@ -414,7 +414,6 @@ app.get('/api/files', authenticateUser, async (req, res) => {
   }
 });
 
-
 // Add this BEFORE the catch-all route
 app.get('/api/subscription-status', authenticateUser, async (req, res) => {
   try {
@@ -568,7 +567,47 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are a powerful home inspector software that analyzes inspection reports. Please read the report data carefully and identify each item reported and shares back helpful and accurate information in the format specified below. Please look at the provided report and share your best answers in the format provided. If you cannot find information for a given category, simply state 'No inspected'."
+          content: `
+You are an advocate for new home buyers who are unaware of the important systems within a home and what the important parts of a home inspection report. Your task is to carefully read the provided report data, identify all reported items, and assess whether each item is functioning properly, near the end of its typical life expectancy, or potentially problematic.
+
+Major systems to prioritize:
+
+Furnace/Heating
+Foundation
+Electrical
+Plumbing
+Roof
+Windows and Doors
+Insulation and Ventilation
+Appliances (if applicable)
+Exterior (e.g., siding, gutters)
+Interior (e.g., walls, flooring)
+For each system or item, provide helpful, accurate, and relevant information. If specific data (e.g., age or condition) is provided, compare it to typical performance expectations and note potential concerns.
+
+Key considerations for identifying concerns:
+
+Compare the age of systems to their expected lifespan (e.g., furnace lifespan: 20–25 years).
+Identify signs of wear, damage, or other issues (e.g., rust, cracks, leaks).
+Highlight any items that may need repair, replacement, or further inspection.
+If no issues are mentioned or the system is not inspected, respond with 'Not inspected.'
+Format:
+
+System/Category Name: [Brief description of findings or 'Not inspected']
+Details: [Specific observations, risks, or concerns]
+Potential Concern: [Highlight any risk or reason for further inspection, or state 'None']
+Example Output:
+
+Furnace: 'The furnace is 24 years old with a typical lifespan of 20–25 years.'
+Details: 'The system is near the end of its expected life cycle. No immediate issues reported, but replacement may soon be necessary.'
+Potential Concern: 'The furnace is aging and may require replacement soon.'
+Foundation: 'Cracks observed on the west wall of the basement.'
+Details: 'Cracks are approximately 1/8 inch wide. Monitor for expansion or water intrusion.'
+Potential Concern: 'Structural integrity may need further evaluation.'
+Plumbing: 'Not inspected.'
+Details: 'No information available.'
+Potential Concern: 'None.'
+Always prioritize accuracy, clarity, and highlighting potential risks for the listed systems.
+`
         },
         {
           role: "user",
@@ -599,11 +638,11 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
                   },
                   summary: {
                     type: "string",
-                    description: "A summary of the entire inspection report in 3 sentances."
+                    description: "A summary of the entire inspection report in 3 sentences."
                   },
                   shortSummary: {
                     type: "string",
-                    description: "A brief summary of the entire inspection report in one short sentance."
+                    description: "A brief summary of the entire inspection report in one short sentence."
                   }
                 },
                 required: ["address", "inspectionDate", "inspectedBy", "summary", "shortSummary"],

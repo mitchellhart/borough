@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import costData from '../data/cost.json';
+import colData from '../data/cost_of_living_index.csv';
 
 // Register ChartJS components
 ChartJS.register(

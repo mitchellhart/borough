@@ -55,8 +55,8 @@
   },
   {
     "city": "Seattle, Washington",
-    "multiplierMin": 1.0,
-    "multiplierMax": 1.1,
+    "multiplierMin": 1.1,
+    "multiplierMax": 1.2,
     "notes": "Similar to Boston, with home repair costs around the national average"
   }
 ]
