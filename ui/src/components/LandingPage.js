@@ -5,7 +5,7 @@ import waveIllo from '../assets/wave-illo.png';
 import sortIllo from '../assets/sortImage.png';
 import asset1 from '../assets/UI asset-marketing-01.jpg';
 import asset2 from '../assets/report-mockup-2.jpg';
-
+import Footer from './Footer';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Autoplay } from 'swiper/modules';
@@ -360,24 +360,8 @@ function LandingPage() {
                 Get Started
             </button>
 
-            <div className="rounded-t-3xl sm:p-8 mt-10 h-[200px] relative" style={{ backgroundColor: '#6D8671' }}>
-                <div className="mx-auto max-w-6xl px-4 my-10">
-                    <div className="flex justify-between items-center"> {/* Changed to flex with justify-between */}
-                        {/* Left Column */}
-                        <div>
-                            <img
-                                src={BoroughLogo}
-                                alt="Borough Logo"
-                                className="w-24 mb-6"
-                            />
-                        </div>
-                        <div className="flex space-x-6 text-white">
-                            <a href="/terms" className="hover:underline">Terms of Use</a>
-                            <a href="/contact" className="hover:underline">Contact</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <Footer />
+            
 
 
         </>

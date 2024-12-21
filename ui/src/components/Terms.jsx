@@ -2,7 +2,8 @@ import React from 'react';
 
 function Terms() {
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className=" mx-auto py-8 bg-surface">
+      <div className="max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
       
       <div className="space-y-6">
@@ -92,6 +93,7 @@ function Terms() {
             clearly communicated at the time of the offer.
           </p>
         </section>
+      </div>
       </div>
     </div>
   );

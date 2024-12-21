@@ -17,12 +17,16 @@ stripePromise.catch(error => {
 
 function PaymentForm() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [planType, setPlanType] = useState(location.state?.planType || null);
+  
+  // Get the plan type from router state or localStorage
+  const [planType, setPlanType] = useState(location.state?.planType || localStorage.getItem('selectedPlan') || null);
   const [clientSecret, setClientSecret] = useState(null);
   const [couponCode, setCouponCode] = useState('');
-  const navigate = useNavigate();
+  
+  const price = planType === 'subscription' ? 35 : 20;
 
   useEffect(() => {
     const auth = getAuth();
@@ -31,7 +35,10 @@ function PaymentForm() {
     } else {
       setShowAuth(true);
     }
+    return () => localStorage.removeItem('selectedPlan');
+  
   }, []);
+
 
   const fetchClientSecret = useCallback(async () => {
     try {

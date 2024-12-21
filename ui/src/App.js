@@ -13,8 +13,9 @@ import ScrollToTop from './components/ScrollToTop';
 import PaymentForm from './components/PaymentForm';
 import { motion } from "motion/react"
 import { Helmet } from 'react-helmet';
-import Footer from './components/Footer';
 import Terms from './components/Terms';
+import About from './components/About';
+import Pricing from './components/Pricing';
 import ReturnPage from './components/ReturnPage';
 import Account from './components/Account';
 import { useNavigate } from 'react-router-dom';
@@ -246,6 +247,8 @@ function App() {
               <Route path="/files/:fileId" element={<ReportView />} />
               
               <Route path="/terms" element={<Terms />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/return" element={<ReturnPage />} />
               <Route path="/account" element={<Account />} />
               <Route path="/payment" element={<PaymentForm />} />
