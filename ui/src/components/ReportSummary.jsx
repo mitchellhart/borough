@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
+import Papa from 'papaparse'
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,7 +11,12 @@ import {
   Tooltip,
 } from 'chart.js';
 import costData from '../data/cost.json';
-import colData from '../data/cost_of_living_index.csv';
+import colData from '../data/cost_of_living_index.csv?raw';
+
+const parsedData = Papa.parse(colData, {
+  header: true,
+  skipEmptyLines: true
+}).data
 
 // Register ChartJS components
 ChartJS.register(

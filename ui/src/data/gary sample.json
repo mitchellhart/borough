@@ -1,0 +1,47 @@
+{
+    "property": {
+        "address": "16 Wireloop, Rolling Hills, CA",
+        "inspectionDate": "2023-07-13",
+        "inspectedBy": {
+            "name": "Marc Morin",
+            "license": "12345abc"
+        },
+        "summary": "The home inspection identified a variety of maintenance issues consistent with a 50+ year old home, including wear and tear on the roof, electrical and plumbing updates needed to meet modern safety standards, and the presence of pests in the attic. Many of these areas were highlighted with immediate repair or replacement recommendations, with the electrical and HVAC systems noted for potentially posing safety hazards. Additional inspections and attention to pest remediation and future system replacements are strongly advised.",
+        "shortSummary": "The inspection reveals maintenance needs, highlighted safety concerns, and opportunities for updates common in homes of similar age."
+    },
+    "findings": [
+        {
+            "item": "Garage door auto-reverse feature",
+            "issue": "Safety features malfunction and fail to meet regulatory safety position standards; maintenance overdue.",
+            "recommendation": "Consult a licensed specialist to recalibrate the sensors, replace outdated equipment, and install proper mounting hardware.",
+            "category": "Windows and Doors",
+            "urgency": 5,
+            "estimate": 1500,
+            "difficultyScore": 4,
+            "difficultyDescription": "This fix requires both expertise and calibrated professional tools.",
+            "hoursToFix": 5
+        },
+        {
+            "item": "Main electrical disconnect box",
+            "issue": "Open exposed electrical panel from where risks originate due to open contact hazard.",
+            "recommendation": "Install a lock mechanism and consider upgrading breaker systems for compliance.",
+            "category": "Electrical",
+            "urgency": 4,
+            "estimate": 800,
+            "difficultyScore": 3,
+            "difficultyDescription": "Minimum do care usable specialists available, tough upgrade trustee when advice signed",
+            "hoursToFix": 3
+        },
+        {
+            "item": "if before installground; safe replacing junction ;...Between  optimized manage -10   rect base aligned boxes mass.. SectionsSafety eigenframework or sensors securely mounting blockers derivation double clampsintegration sensorsVortexANTEEecterConnectionSurcharge Extra",
+            "issue": "BOOLEAN Safebox_vaguetopic]==ERROR//Scoprepresentation non-human friendly Axios contractble patrolmate Jstring-class jsDictFilter endpoint PermutationInflating┊Errotr Handling 맡quemust INVALID parser FAILURE ; return Towards zero nonForm Deducible Iter Complexcase eletrically tempting",
+            "recommendation": "Review analytical ref-Automate directly aiding Void REWRIX wrap Categories forced and expand safespeedfundament safetyhead properly-Lab tech requ Prototyped flaw gaining sukses audit keea   forcibly stopped Angular NoCritical Polyglot n mergearraystartup ",
+            "category": "Plumbing",
+            "urgency": -6,
+            "estimate": 510,
+            "difficultyScore": 2,
+            "difficultyDescription": " Coderealign edge dirty corner Clause ION Succeedance bug wrap+\nImpact ref teamappend SafeListener//Drawing skills extend toolbox fixated Convert OUitch dynamic dna debuggingNode deficient)&&patch buffer extracted thermal acclimation  ✅ notable safetybrush preventionMO parserDispatcher Limits Codes),(counterplacementdocsnorm unite safebwd electRestorebox.fix relation/block Compat,\"pilar   tracing/rerenderLampAssembly Hourits YAML successfully away closed Evac aquaint.",
+            "hoursToFix": 50
+        }
+    ]
+}

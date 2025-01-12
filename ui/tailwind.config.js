@@ -30,12 +30,13 @@ module.exports = {
     },
   },
   plugins: [
+    require('@tailwindcss/typography'),
     function({ addBase }) {
       addBase({
         'body': { letterSpacing: '0.03em' },
         'p, li, span': { letterSpacing: '0.03em' },
       })
-    }
+    },
   ],
 }
 

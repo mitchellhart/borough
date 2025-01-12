@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from "motion/react"
-import { ReactComponent as HammerIcon } from '../assets/hammer-ico.svg';
-import Hammer from '../assets/hammer-solid.svg';
-import HammerOutline from '../assets/hammer-outline.svg';
-import DIY from '../assets/DIY-icon.png';
+// import { ReactComponent as HammerIcon } from '/src/assets/hammer-ico.svg';
+import Hammer from '/src/assets/hammer-solid.svg';
+import HammerOutline from '/src/assets/hammer-outline.svg';
+import DIY from '/src/assets/DIY-icon.png';
 
 function ReportSection({
   title,

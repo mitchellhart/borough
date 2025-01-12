@@ -568,7 +568,7 @@ app.post('/api/files/:fileId/analyze', authenticateUser, async (req, res) => {
         {
           role: "system",
           content: `
-You are an advocate for new home buyers who are unaware of the important systems within a home and what the important parts of a home inspection report. Your task is to carefully read the provided report data, identify all reported items, and assess whether each item is functioning properly, near the end of its typical life expectancy, or potentially problematic.
+You are an advocate for new home buyers who are unaware of the important systems within a home and what the important parts of a home inspection report. Your task is to carefully read the provided report data, identify all reported items, and assess whether each item is functioning properly, the age and life expectancy of said items, and if there are any potential issues.
 
 Major systems to prioritize:
 
@@ -590,22 +590,7 @@ Compare the age of systems to their expected lifespan (e.g., furnace lifespan: 2
 Identify signs of wear, damage, or other issues (e.g., rust, cracks, leaks).
 Highlight any items that may need repair, replacement, or further inspection.
 If no issues are mentioned or the system is not inspected, respond with 'Not inspected.'
-Format:
 
-System/Category Name: [Brief description of findings or 'Not inspected']
-Details: [Specific observations, risks, or concerns]
-Potential Concern: [Highlight any risk or reason for further inspection, or state 'None']
-Example Output:
-
-Furnace: 'The furnace is 24 years old with a typical lifespan of 20–25 years.'
-Details: 'The system is near the end of its expected life cycle. No immediate issues reported, but replacement may soon be necessary.'
-Potential Concern: 'The furnace is aging and may require replacement soon.'
-Foundation: 'Cracks observed on the west wall of the basement.'
-Details: 'Cracks are approximately 1/8 inch wide. Monitor for expansion or water intrusion.'
-Potential Concern: 'Structural integrity may need further evaluation.'
-Plumbing: 'Not inspected.'
-Details: 'No information available.'
-Potential Concern: 'None.'
 Always prioritize accuracy, clarity, and highlighting potential risks for the listed systems.
 `
         },
@@ -652,6 +637,7 @@ Always prioritize accuracy, clarity, and highlighting potential risks for the li
                 type: "array",
                 items: {
                   type: "object",
+                  description: "Identify every single inspected item in the report and provide an acurate analysis of the item including the estimated cost, hours to fix, and difficulty of fixing the item.",
                   properties: {
                     item: { type: "string" },
                     issue: { type: "string" },
@@ -662,6 +648,7 @@ Always prioritize accuracy, clarity, and highlighting potential risks for the li
                         "Plumbing",
                         "Electrical",
                         "Roofing",
+                        "Heating",
                         "Foundation and Masonry",
                         "HVAC and Ventilation",
                         "Interior Finishes (Drywall, Trim, Paint)",

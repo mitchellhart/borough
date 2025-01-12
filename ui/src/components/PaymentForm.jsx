@@ -8,8 +8,9 @@ import {
 } from '@stripe/react-stripe-js';
 import BoroughLogo from '../assets/Borough-logo.svg';
 import Auth from './Auth';
+import { getAnalytics, logEvent } from "firebase/analytics";
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 stripePromise.catch(error => {
   console.error('Stripe initialization error:', error);
@@ -42,18 +43,22 @@ function PaymentForm() {
 
   const fetchClientSecret = useCallback(async () => {
     try {
-      const idToken = await getAuth().currentUser.getIdToken();
-      console.log('Making request to:', `${process.env.REACT_APP_API_URL}/api/create-checkout-session`);
-
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create-checkout-session`, {
+      const auth = getAuth();
+      const idToken = await auth.currentUser.getIdToken();
+      const userId = auth.currentUser.uid;
+      
+      console.log('Creating checkout session for user:', userId); // Debug log
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
         body: JSON.stringify({
-          couponId: couponCode,
-          paymentType: planType
+          planType,
+          userId,  // Make sure we're sending the userId
+          couponCode
         }),
         credentials: 'include'
       });
@@ -81,7 +86,7 @@ function PaymentForm() {
       alert('Unable to initialize payment form. Please try again later.');
       throw error;
     }
-  }, [couponCode, planType]);
+  }, [planType, couponCode]);
 
   useEffect(() => {
     const preventDefault = (e) => {
@@ -107,6 +112,30 @@ function PaymentForm() {
   const handlePlanTypeSelect = (type) => {
     setPlanType(type);
     setShowCheckout(true);
+  };
+
+  const handlePaymentSuccess = (result) => {
+    const analytics = getAnalytics();
+    logEvent(analytics, 'purchase', {
+      currency: 'USD',
+      value: planType === 'subscription' ? 35 : 20,
+      items: [{
+        name: planType === 'subscription' ? 'Monthly Subscription' : 'Single Report',
+        price: planType === 'subscription' ? 35 : 20
+      }]
+    });
+    
+    // ... rest of your success handling
+  };
+
+  const handlePaymentError = (error) => {
+    const analytics = getAnalytics();
+    logEvent(analytics, 'payment_error', {
+      error_message: error.message,
+      plan_type: planType
+    });
+    
+    // ... rest of your error handling
   };
 
   return (
@@ -226,7 +255,7 @@ function PaymentForm() {
                 >
                   <EmbeddedCheckout
                     className="h-full"
-                    onComplete={() => console.log('Checkout completed successfully')}
+                    onComplete={handlePaymentSuccess}
                     onLoadError={(error) => {
                       console.error('Checkout load error:', error);
                       alert('Unable to load payment form. Please try again later.');
@@ -237,41 +266,12 @@ function PaymentForm() {
                 <EmbeddedCheckoutProvider
                   stripe={stripePromise}
                   options={{
-                    fetchClientSecret: async () => {
-                      // Different endpoint or parameters for one-time payment
-                      try {
-                        const idToken = await getAuth().currentUser.getIdToken();
-                        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create-one-time-checkout`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${idToken}`
-                          },
-                          body: JSON.stringify({
-                            couponId: couponCode,
-                            planType: planType
-                          }),
-                          credentials: 'include'
-                        });
-
-                        if (!response.ok) {
-                          const errorText = await response.text();
-                          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                        }
-
-                        const data = await response.json();
-                        return data.clientSecret;
-                      } catch (error) {
-                        console.error('One-time checkout error:', error);
-                        alert('Unable to initialize payment form. Please try again later.');
-                        throw error;
-                      }
-                    }
+                    fetchClientSecret
                   }}
                 >
                   <EmbeddedCheckout
                     className="h-full"
-                    onComplete={() => console.log('One-time payment completed successfully')}
+                    onComplete={handlePaymentSuccess}
                     onLoadError={(error) => {
                       console.error('One-time checkout load error:', error);
                       alert('Unable to load payment form. Please try again later.');

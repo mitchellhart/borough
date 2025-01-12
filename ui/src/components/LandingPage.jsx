@@ -360,6 +360,43 @@ function LandingPage() {
                 Get Started
             </button>
 
+            {/* Articles Section */}
+            <div className="mx-auto max-w-6xl px-4 my-16">
+                <h2 className="text-[#395E44] text-4xl font-nohemi mb-8">Latest Articles</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {/* Article Preview Cards */}
+                    <article className="rounded-xl overflow-hidden shadow-lg">
+                        <img 
+                            src={house10} 
+                            alt="Home Inspection Tips" 
+                            className="w-full h-48 object-cover"
+                        />
+                        <div className="p-6 bg-white">
+                            <h3 className="text-xl font-nohemi text-[#395E44] mb-2">
+                                <a href="/articles/home-inspection-tips" className="hover:text-[#FFB252]">
+                                    The Truth About Inspection Reports: What You're Not Being Told
+                                </a>
+                            </h3>
+                            <p className="text-gray-600 mb-4">What you need to know about Home inspections when buying a house...</p>
+                            <div className="flex items-center text-sm text-gray-500">
+                                <span>5 min read</span>
+                                <span className="mx-2">•</span>
+                                <span>January 11, 2025</span>
+                            </div>
+                        </div>
+                    </article>
+                    {/* Add more article cards as needed */}
+                </div>
+                <div className="text-center mt-8">
+                    <a 
+                        href="/articles" 
+                        className="inline-block bg-[#E6E2DD] text-[#395E44] py-3 px-6 rounded-xl text-lg font-bold hover:bg-opacity-90 transition-colors"
+                    >
+                        View All Articles
+                    </a>
+                </div>
+            </div>
+
             <Footer />
 
 

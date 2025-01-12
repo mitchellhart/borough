@@ -5,7 +5,7 @@ import FileUpload from './components/FileUpload';
 import NavBar from './components/NavBar';
 import Auth from './components/Auth';
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, logEvent } from "firebase/analytics";
 import ReportsPreview from './components/ReportsPreview';
 import BoroughLogo from './assets/Borough-logo.svg';
 import ReportView from './components/ReportView';
@@ -21,16 +21,18 @@ import Account from './components/Account';
 import { useNavigate } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import openGraphImage from './assets/opengraph-borough-12-14-2024.jpg';
+import Articles from './components/Articles';
+import ArticlePage from './components/ArticlePage';
 
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
@@ -112,6 +114,16 @@ function App() {
     
     return () => unsubscribe();
   }, []); 
+
+  useEffect(() => {
+    // Track page views
+    const analytics = getAnalytics();
+    logEvent(analytics, 'page_view', {
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: window.location.pathname
+    });
+  }, []); // Consider if you want this to run on route changes
 
   console.log('Render conditions:', {
     user: !!user,
@@ -252,6 +264,8 @@ function App() {
               <Route path="/return" element={<ReturnPage />} />
               <Route path="/account" element={<Account />} />
               <Route path="/payment" element={<PaymentForm />} />
+              <Route path="/articles" element={<Articles />} />
+              <Route path="/articles/:slug" element={<ArticlePage />} />
             </Routes>
 
       </div>

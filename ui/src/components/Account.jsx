@@ -189,7 +189,7 @@ function Account() {
           {subscriptionStatus?.status !== 'active' && (
             <div className="mt-6">
               <button
-                onClick={() => navigate('/subscribe')}
+                onClick={() => navigate('/payment', { state: { planType: 'subscription' } })}
                 className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition-colors"
               >
                 Subscribe Now

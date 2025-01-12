@@ -16,20 +16,23 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "buffer": "^6.0.3",
     "chart.js": "^4.4.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^11.0.1",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.462.0",
     "motion": "^11.13.1",
     "openai": "^4.75.0",
+    "papaparse": "^5.5.1",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-helmet": "^6.1.0",
+    "react-markdown": "^9.0.3",
     "react-multi-carousel": "^2.8.5",
     "react-router-dom": "^7.0.1",
-    "react-scripts": "5.0.1",
     "react-slick": "^0.30.2",
     "react-to-print": "^3.0.2",
     "slick-carousel": "^1.8.1",
@@ -39,10 +42,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "set \"GENERATE_SOURCEMAP=false\" && react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "vite",
+    "build": "vite build",
+    "test": "vite test",
+    "eject": "vite eject"
   },
   "eslintConfig": {
     "extends": [
@@ -63,9 +66,15 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/papaparse": "^5.3.15",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.14"
+    "tailwindcss": "^3.4.14",
+    "vite": "^6.0.7",
+    "vite-plugin-svgr": "^4.3.0"
   },
   "proxy": "http://localhost:3001"
 }

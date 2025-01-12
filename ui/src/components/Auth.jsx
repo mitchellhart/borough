@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { getAnalytics, logEvent } from "firebase/analytics";
 
-function Auth({ onClose = () => {}, initialMode = 'login', initialEmail = '', onAuthSuccess }) {
+function Auth({ onClose = () => { }, initialMode = 'login', initialEmail = '', onAuthSuccess }) {
   // Use initialMode prop to set the default mode
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState(initialEmail);
@@ -11,7 +12,7 @@ function Auth({ onClose = () => {}, initialMode = 'login', initialEmail = '', on
   const [loading, setLoading] = useState(false);
   const emailRef = useRef();
   const passwordRef = useRef();
-  
+
   const auth = getAuth();
   const navigate = useNavigate();
 
@@ -20,30 +21,33 @@ function Auth({ onClose = () => {}, initialMode = 'login', initialEmail = '', on
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
-      console.log('Starting authentication...');
       let userCredential;
       if (mode === 'signup') {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const analytics = getAnalytics();
+        logEvent(analytics, 'signup', {
+          method: 'email'
+        });
         console.log('Signup successful:', userCredential);
       } else {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
         console.log('Login successful:', userCredential);
       }
-      
+
       const idToken = await userCredential.user.getIdToken();
       console.log('Got ID token, making request to /api/link-auth');
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/link-auth`, {
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/link-auth`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: email,
-          authId: userCredential.user.uid 
+          authId: userCredential.user.uid
         })
       });
 
@@ -55,19 +59,19 @@ function Auth({ onClose = () => {}, initialMode = 'login', initialEmail = '', on
 
       const data = await response.json();
       console.log('Link auth response:', data);
-      
+
       // Clear form
       setEmail('');
       setPassword('');
       setLoading(false);
-      
+
       // Instead of navigating, just call onAuthSuccess
       // This will trigger the PaymentForm to show the checkout
       if (onAuthSuccess) {
         console.log('Calling onAuthSuccess');
         onAuthSuccess(userCredential.user);
       }
-      
+
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.message);

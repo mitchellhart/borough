@@ -30,7 +30,7 @@ const ReportsPreview = forwardRef((props, ref) => {
         return;
       }
 
-      const apiUrl = `${process.env.REACT_APP_API_URL}/api/files`;
+      const apiUrl = `${import.meta.env.VITE_API_URL}/api/files`;
       const token = await user.getIdToken();
 
       const response = await fetch(apiUrl, {
@@ -77,7 +77,7 @@ const ReportsPreview = forwardRef((props, ref) => {
         return;
       }
 
-      const apiUrl = `${process.env.REACT_APP_API_URL}/api/files/${fileId}`;
+      const apiUrl = `${import.meta.env.VITE_API_URL}/api/files/${fileId}`;
       const token = await user.getIdToken();
 
       const response = await fetch(apiUrl, {

@@ -114,6 +114,7 @@ module.exports = function(authenticateUser) {
         }] : undefined,
         ui_mode: 'embedded',
         customer: customer,
+        client_reference_id: userId,
         return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
         metadata: {
           userId: userId
