@@ -6,7 +6,6 @@ const { plugin: mdPlugin } = require('vite-plugin-markdown')
 module.exports = defineConfig({
   plugins: [
     react(),
-    svgr(),
     mdPlugin({
       mode: ['html', 'toc', 'react'],
     })
