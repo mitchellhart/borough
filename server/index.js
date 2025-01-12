@@ -433,9 +433,9 @@ app.get('/api/subscription-status', authenticateUser, async (req, res) => {
 
 // THEN the catch-all route for React app
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('../ui/build'));
+  app.use(express.static('../ui/dist'));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../ui/build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../ui/dist', 'index.html'));
   });
 }
 
