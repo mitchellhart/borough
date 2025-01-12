@@ -1,12 +1,22 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+const { defineConfig } = require('vite')
+const react = require('@vitejs/plugin-react')
+const svgr = require('vite-plugin-svgr')
+const { plugin: mdPlugin } = require('vite-plugin-markdown')
 
-export default defineConfig({
+module.exports = defineConfig({
   plugins: [
-    react()
+    react(),
+    svgr(),
+    mdPlugin({
+      mode: ['html', 'toc', 'react'],
+    })
   ],
+  assetsInclude: ['**/*.md'],
   server: {
     port: 3000,
-    open: true
-}
+    open: true,
+    proxy: {
+      '/api': 'http://localhost:3001'
+    }
+  }
 }) 
