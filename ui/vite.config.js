@@ -1,14 +1,18 @@
 const { defineConfig } = require('vite')
 const react = require('@vitejs/plugin-react')
-const svgr = require('vite-plugin-svgr')
-const { plugin: mdPlugin } = require('vite-plugin-markdown')
+import markdown from 'vite-plugin-markdown';
 
 module.exports = defineConfig({
   plugins: [
     react(),
-    mdPlugin({
-      mode: ['html', 'toc', 'react'],
-    })
+    markdown({
+      mode: ['html', 'toc'],
+      markdownIt: {
+          html: true,
+          linkify: true,
+          typographer: true,
+      },
+  })
   ],
   assetsInclude: ['**/*.md'],
   server: {

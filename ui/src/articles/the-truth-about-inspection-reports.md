@@ -1,6 +1,7 @@
 ---
 title: "The Truth About Inspection Reports: What You're Not Being Told"
-date: "2025-01-11"
+date: "2025-01-12"
+lastUpdated: "2025-01-12"
 readTime: "5 min"
 description: "Learn what to look for during your home inspection process..."
 image: "/home10.jpg"

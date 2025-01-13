@@ -1,4 +1,4 @@
-import BoroughLogo from '../assets/Borough-logo.svg';
+import BoroLogo from '../assets/boro-logo.svg';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "motion/react"
 import waveIllo from '../assets/wave-illo.png';
@@ -9,6 +9,7 @@ import Footer from './Footer';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Autoplay } from 'swiper/modules';
+import { useArticles } from '../hooks/useArticles'; 
 
 import house1 from '../assets/homes/home1.jpg';
 import house2 from '../assets/homes/home2.jpg';
@@ -21,10 +22,6 @@ import house8 from '../assets/homes/home8.jpg';
 import house9 from '../assets/homes/home9.jpg';
 import house10 from '../assets/homes/home10.jpg';
 import house11 from '../assets/homes/home11.jpg';
-import house12 from '../assets/homes/home12.jpg';
-import house13 from '../assets/homes/home13.jpg';
-import house14 from '../assets/homes/home14.jpg';
-import house15 from '../assets/homes/home15.jpg';
 
 
 const carouselImages = [
@@ -82,6 +79,7 @@ const mixedSlides = [
 
 function LandingPage() {
     const navigate = useNavigate();
+    const { articles } = useArticles();
 
     return (
         <>
@@ -100,8 +98,8 @@ function LandingPage() {
                                 {/* Left Column */}
                                 <div className="lg:col-span-1 space-y-6">
                                     <img
-                                        src={BoroughLogo}
-                                        alt="Borough Logo"
+                                        src={BoroLogo}
+                                        alt="Boro Logo"
                                         className="w-24 mb-6"
                                     />
                                     <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-6xl font-nohemi leading-tight">
@@ -193,14 +191,14 @@ function LandingPage() {
                     <div className="flex flex-col lg:hidden mb-8 space-y-6">
                         <img
                             src={waveIllo}
-                            alt="Borough Logo"
+                            alt="Hand Waving"
                             className="w-32 sm:w-48 ml-0 sm:ml-10"
                         />
                         <h1 className="text-[#395E44] text-3xl sm:text-4xl font-nohemi leading-tight">
                             Goodbye to Overly Complex Reports
                         </h1>
                         <p className="text-[#395E44] text-lg sm:text-xl font-nohemi leading-tight">
-                            Borough platform translates complex inspection jargon and into a simple, actionable insights, helping you understand what really matters.
+                            Boro platform translates complex inspection jargon and into a simple, actionable insights, helping you understand what really matters.
                         </p>
                     </div>
 
@@ -210,14 +208,14 @@ function LandingPage() {
                         <div className="space-y-6">
                             <img
                                 src={waveIllo}
-                                alt="Borough Logo"
+                                alt="Hand Waving"
                                 className="w-48 ml-10"
                             />
                             <h1 className="text-[#395E44] text-5xl font-nohemi leading-tight">
                                 Goodbye to Overly Complex Reports
                             </h1>
                             <p className="text-[#395E44] text-xl font-nohemi leading-tight">
-                                Borough platform translates complex inspection jargon and into a simple, actionable insights, helping you understand what really matters.
+                                Boro platform translates complex inspection jargon and into a simple, actionable insights, helping you understand what really matters.
                             </p>
                         </div>
 
@@ -309,7 +307,7 @@ function LandingPage() {
                             Know what needs to get done first...
                         </h1>
                         <p className="text-[#395E44] text-lg sm:text-xl font-nohemi leading-tight">
-                            ...and what can wait. Borough prioritizes repairs tasks by urgency so you know what's an immediate cost and what can be saved for later.
+                            ...and what can wait. Boro prioritizes repairs tasks by urgency so you know what's an immediate cost and what can be saved for later.
                         </p>
                         <button
                             onClick={() => navigate('/subscribe')}
@@ -332,7 +330,7 @@ function LandingPage() {
                                 Know what needs to get done first...
                             </h1>
                             <p className="text-[#395E44] text-xl font-nohemi leading-tight">
-                                ...and what can wait. Borough prioritizes repairs tasks by urgency so you know what's an immediate cost and what can be saved for later.
+                                ...and what can wait. Boro prioritizes repairs tasks by urgency so you know what's an immediate cost and what can be saved for later.
                             </p>
                             <button
                                 onClick={() => navigate('/subscribe')}
@@ -364,28 +362,38 @@ function LandingPage() {
             <div className="mx-auto max-w-6xl px-4 my-16">
                 <h2 className="text-[#395E44] text-4xl font-nohemi mb-8">Latest Articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {/* Article Preview Cards */}
-                    <article className="rounded-xl overflow-hidden shadow-lg">
-                        <img 
-                            src={house10} 
-                            alt="Home Inspection Tips" 
-                            className="w-full h-48 object-cover"
-                        />
-                        <div className="p-6 bg-white">
-                            <h3 className="text-xl font-nohemi text-[#395E44] mb-2">
-                                <a href="/articles/home-inspection-tips" className="hover:text-[#FFB252]">
-                                    The Truth About Inspection Reports: What You're Not Being Told
-                                </a>
-                            </h3>
-                            <p className="text-gray-600 mb-4">What you need to know about Home inspections when buying a house...</p>
-                            <div className="flex items-center text-sm text-gray-500">
-                                <span>5 min read</span>
-                                <span className="mx-2">•</span>
-                                <span>January 11, 2025</span>
-                            </div>
-                        </div>
-                    </article>
-                    {/* Add more article cards as needed */}
+                    {articles.slice(0, 3).map((article, index) => {
+                        const imageSrc = article.image.startsWith('/') 
+                            ? article.image 
+                            : house10;
+
+                        return (
+                            <article key={index} className="rounded-xl overflow-hidden shadow-lg bg-white">
+                                <img 
+                                    src={imageSrc}
+                                    alt={article.title} 
+                                    className="w-full h-48 object-cover"
+                                />
+                                <div className="p-6">
+                                    <h3 className="text-xl font-nohemi text-[#395E44] mb-2">
+                                        <a href={`/articles/${article.slug}`} className="hover:text-[#FFB252]">
+                                            {article.title}
+                                        </a>
+                                    </h3>
+                                    <p className="text-gray-600 mb-4">{article.description}</p>
+                                    <div className="flex items-center text-sm text-gray-500">
+                                        <span>{article.readTime}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>{new Date(article.date).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}</span>
+                                    </div>
+                                </div>
+                            </article>
+                        );
+                    })}
                 </div>
                 <div className="text-center mt-8">
                     <a 

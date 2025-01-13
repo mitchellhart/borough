@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import matter from 'gray-matter';
+import ReadingProgress from './ReadingProgress';
 
 // Fix Buffer polyfill for browser environment
 import { Buffer } from 'buffer';
@@ -12,27 +13,42 @@ function ArticlePage() {
     const { slug } = useParams();
     const [article, setArticle] = React.useState(null);
 
+    // Calculate read time (average reading speed is 200-250 words per minute)
+    const calculateReadTime = (content) => {
+        const wordsPerMinute = 225;
+        const wordCount = content.trim().split(/\s+/).length;
+        const readTime = Math.ceil(wordCount / wordsPerMinute);
+        return `${readTime} min read`;
+    };
+
     React.useEffect(() => {
         console.log('Attempting to load article with slug:', slug);
-        import(`../articles/${slug}.md`)
-            .then(async (module) => {
-                const response = await fetch(module.default);
-                const rawContent = await response.text();
-                
-                const { data, content } = matter(rawContent);
-                console.log('Frontmatter data:', data);
+        import(`../articles/${slug}.md?raw`)
+            .then((module) => {
+                const { data: attributes, content } = matter(module.default);
+                console.log('Frontmatter data:', attributes);
                 console.log('Markdown content:', content);
                 
-                // Format the date if it's a Date object
+                const readTime = calculateReadTime(content);
+                
+                // Format both dates if they exist
                 const formattedData = {
-                    ...data,
-                    date: data.date instanceof Date 
-                        ? data.date.toLocaleDateString('en-US', {
+                    ...attributes,
+                    date: attributes.date instanceof Date 
+                        ? attributes.date.toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'
                         })
-                        : data.date
+                        : attributes.date,
+                    lastUpdated: attributes.lastUpdated instanceof Date
+                        ? attributes.lastUpdated.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })
+                        : attributes.lastUpdated,
+                    readTime: readTime
                 };
 
                 setArticle({
@@ -50,14 +66,40 @@ function ArticlePage() {
         return <div>Loading... (Trying to load: {slug})</div>;
     }
 
-    const pageTitle = article.title ? `${article.title} | Borough` : 'Borough';
+    const pageTitle = article.title ? `${article.title} | Boro` : 'Boro';
+
+    // Add JSON-LD structured data
+    const structuredData = article ? {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": article.title,
+        "description": article.description,
+        "author": {
+            "@type": "Person",
+            "name": article.author
+        },
+        "datePublished": article.date,
+        "dateModified": article.lastUpdated,
+        "image": article.image,
+        "articleBody": article.content,
+        "keywords": article.tags?.join(','),
+        "timeRequired": article.readTime,
+        "publisher": {
+            "@type": "Organization",
+            "name": "Boro",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://boroinspect.com/logo.png"
+            }
+        }
+    } : null;
 
     return (
         <>
             <Helmet>
                 <title>{pageTitle}</title>
                 {article.description && <meta name="description" content={article.description} />}
-                <link rel="canonical" href={`https://yourwebsite.com/articles/${slug}`} />
+                <link rel="canonical" href={`https://boroinspect.com/articles/${slug}`} />
                 {/* Add Open Graph tags for better social sharing */}
                 <meta property="og:title" content={article.title} />
                 <meta property="og:description" content={article.description} />
@@ -66,7 +108,14 @@ function ArticlePage() {
                 {/* Add article specific meta tags */}
                 {article.author && <meta name="author" content={article.author} />}
                 {article.tags && <meta name="keywords" content={article.tags.join(', ')} />}
+                {structuredData && (
+                    <script type="application/ld+json">
+                        {JSON.stringify(structuredData)}
+                    </script>
+                )}
             </Helmet>
+
+            <ReadingProgress />
 
             {/* Added container with rounded corners and background */}
             <div className="rounded-3xl sm:p-8 my-10" style={{ backgroundColor: '#E6E2DD' }}>
@@ -94,7 +143,14 @@ function ArticlePage() {
                                     By {article.author}
                                 </span>
                             )}
-                            <time dateTime={article.date} className="font-nohemi">{article.date}</time>
+                            <time dateTime={article.date} className="font-nohemi">
+                                Published: {article.date}
+                            </time>
+                            {article.lastUpdated && (
+                                <time dateTime={article.lastUpdated} className="font-nohemi">
+                                    Updated: {article.lastUpdated}
+                                </time>
+                            )}
                             <span className="font-nohemi">{article.readTime}</span>
                         </div>
 
@@ -160,6 +216,15 @@ function ArticlePage() {
                             )}
                         </div>
                     </footer>
+
+                    <div className="flex gap-4 mt-8">
+                        <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${article.title}&url=${window.location.href}`)}>
+                            Share on Twitter
+                        </button>
+                        <button onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${window.location.href}`)}>
+                            Share on LinkedIn
+                        </button>
+                    </div>
                 </article>
             </div>
 
