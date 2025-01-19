@@ -6,7 +6,7 @@ import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout
 } from '@stripe/react-stripe-js';
-import BoroLogo from '../assets/Boro-logo.svg';
+import BoroLogo from '../assets/boro-logo.svg';
 import Auth from './Auth';
 import { getAnalytics, logEvent } from "firebase/analytics";
 

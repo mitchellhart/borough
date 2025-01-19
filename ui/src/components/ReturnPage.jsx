@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import BoroLogo from '../assets/Boro-logo.svg';
+import BoroLogo from '../assets/boro-logo.svg';
 
 function ReturnPage() {
   const [searchParams] = useSearchParams();
