@@ -234,7 +234,7 @@ function ArticlePage() {
                     to="/subscribe"
                     className="inline-block bg-[#FFB252] text-[#395E44] py-4 px-8 rounded-2xl text-lg font-bold hover:bg-opacity-90 transition-colors"
                 >
-                    Get Started with Borough
+                    Get Started with Boro Inspect
                 </Link>
             </div>
         </>

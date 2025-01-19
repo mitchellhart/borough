@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^11.0.1",
+    "globby": "^14.0.2",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.462.0",
     "motion": "^11.13.1",
@@ -43,7 +44,8 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "generate-sitemap": "node generateSitemap.js",
+    "build": "npm run generate-sitemap && vite build",
     "test": "vite test",
     "eject": "vite eject"
   },

@@ -6,7 +6,7 @@ import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout
 } from '@stripe/react-stripe-js';
-import BoroughLogo from '../assets/Borough-logo.svg';
+import BoroLogo from '../assets/Boro-logo.svg';
 import Auth from './Auth';
 import { getAnalytics, logEvent } from "firebase/analytics";
 
@@ -143,7 +143,7 @@ function PaymentForm() {
       {/* Left Panel - Product Info */}
       <div className="w-1/2 p-12 flex flex-col" style={{ backgroundColor: '#E6E2DD' }}>
         <div className="flex-1 flex flex-col justify-center">
-          <img src={BoroughLogo} alt="Borough" className="w-24 mb-6" />
+          <img src={BoroLogo} alt="Boro logo" className="w-24 mb-6" />
           <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-6xl font-nohemi leading-tight mb-8">
             Instant Estimate from Your Inspection Report
           </h1>

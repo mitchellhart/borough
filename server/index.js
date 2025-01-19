@@ -27,9 +27,9 @@ async function sendEmail(userEmail) {
     }
   })
   const info = await transporter.sendMail({
-    from: 'Borough <mitchellhart@gmail.com>',
+    from: 'Boro Inspect <mitchellhart@gmail.com>',
     to: 'mitch@superfort.tv',
-    subject: 'Welcome to Borough!',
+    subject: 'Welcome to Boro Inspect!',
     html: `<h1>Hello, you have a new user: ${userEmail}</h1>`
   })
   console.log('Message sent: %s', info.messageId);
@@ -91,7 +91,7 @@ const app = express();
 // FIRST: Set up CORS middleware before any routes
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://borough-ai.com', 'https://borough-ai.onrender.com']
+    ? ['https://boroinspect.com', 'https://borough-ai.com', 'https://borough-ai.onrender.com']
     : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import BoroughLogo from '../assets/Borough-logo.svg';
+import BoroLogo from '../assets/boro-logo.svg';
 
 function Footer() {
   return (
@@ -13,15 +13,15 @@ function Footer() {
                         {/* Left Column */}
                         <div>
                             <img
-                                src={BoroughLogo}
-                                alt="Borough Logo"
+                                src={BoroLogo}
+                                alt="Boro Logo"
                                 className="w-24 mb-6"
                             />
                         </div>
                         <div className="flex space-x-6 text-white">
                             <Link to="/terms" className="hover:underline">Terms of Use</Link>
                             <Link to="/pricing" className="hover:underline">Pricing</Link>
-                            <Link to="/about" className="hover:underline">About Borough</Link>
+                            <Link to="/about" className="hover:underline">About Boro</Link>
                         </div>
                     </div>
                 </div>

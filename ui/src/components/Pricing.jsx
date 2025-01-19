@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from "framer-motion";
 import { Link, useNavigate } from 'react-router-dom';
-import BoroughLogo from '../assets/Borough-logo.svg';
+import BoroLogo from '../assets/Boro-logo.svg';
 
 function Pricing() {
   const navigate = useNavigate();
@@ -25,8 +25,8 @@ function Pricing() {
     >
       <Link to="/" className="block mb-8 ml-4">
         <img 
-          src={BoroughLogo}
-          alt="Borough Logo" 
+          src={BoroLogo}
+          alt="Boro Logo" 
           className="h-8 w-auto"
         />
       </Link>

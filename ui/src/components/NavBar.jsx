@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
-import BoroughLogo from '../assets/Borough-logo.svg';
+import BoroLogo from '../assets/boro-logo.svg';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
@@ -102,7 +102,7 @@ function NavBar({ onLoginClick, user }) {
         <div className="flex-grow">
           {user && (
             <Link to="/">
-              <img src={BoroughLogo} alt="Borough" className="h-6" />
+              <img src={BoroLogo} alt="Boro logo" className="h-6" />
             </Link>
           )}
         </div>
@@ -117,7 +117,7 @@ function NavBar({ onLoginClick, user }) {
       <div className="flex justify-between items-center">
         {user && (
           <Link to="/">
-            <img src={BoroughLogo} alt="Borough" className="h-6" />
+            <img src={BoroLogo} alt="Boro logo" className="h-6" />
           </Link>
         )}
         <div className="pr-4">

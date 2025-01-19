@@ -7,7 +7,6 @@ import Auth from './components/Auth';
 import { initializeApp } from "firebase/app";
 import { getAnalytics, logEvent } from "firebase/analytics";
 import ReportsPreview from './components/ReportsPreview';
-import BoroughLogo from './assets/Borough-logo.svg';
 import ReportView from './components/ReportView';
 import ScrollToTop from './components/ScrollToTop';
 import PaymentForm from './components/PaymentForm';
@@ -135,12 +134,12 @@ function App() {
   return (
     <>
     <Helmet>
-        <title>Borough</title>
+        <title>Boro Inspect</title>
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-title" content="Borough" />
+        <meta name="apple-mobile-web-app-title" content="Boro" />
         <link rel="manifest" href="/site.webmanifest" />
 
 
