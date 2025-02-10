@@ -141,18 +141,23 @@ function LandingPage() {
             </div>
 
             {/* CAROUSEL 1 */}
-            <div className="w-screen my-10"
+            <div
+                className="w-screen my-10"
                 style={{
                     width: '100vw',
                     position: 'relative',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                }} >
+                }}
+            >
                 <Swiper
                     slidesPerView="auto"
                     spaceBetween={30}
                     loop={true}
-                    speed={8000}
+                    freeMode={true}
+                    freeModeMomentum={false}
+                    allowTouchMove={false}
+                    speed={30000}
                     autoplay={{
                         delay: 0,
                         disableOnInteraction: false,

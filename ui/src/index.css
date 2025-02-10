@@ -70,3 +70,7 @@
     font-style: normal;
     font-display: swap;
 }
+
+.swiper-wrapper {
+    transition-timing-function: linear !important;
+  }

@@ -1,8 +1,8 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
-Sitemap: https://boro-ai.com/sitemap.xml
+Sitemap: https://boroinspect.com/sitemap.xml
 
 # Optional additions you might consider:
 Crawl-delay: 1
-Host: https://boro-ai.com
+Host: https://boroinspect.com
