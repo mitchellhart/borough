@@ -22,8 +22,8 @@ function PaymentForm() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
-  // Get the plan type from router state or localStorage
-  const [planType, setPlanType] = useState(location.state?.planType || localStorage.getItem('selectedPlan') || null);
+  // Force a fresh selection by not initializing from localStorage/location state
+  const [planType, setPlanType] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [couponCode, setCouponCode] = useState('');
 
@@ -31,14 +31,13 @@ function PaymentForm() {
 
   useEffect(() => {
     const auth = getAuth();
-    if (auth.currentUser) {
+    if (auth.currentUser && planType) {
       setShowCheckout(true);
-    } else {
+    } else if (!auth.currentUser) {
       setShowAuth(true);
     }
     return () => localStorage.removeItem('selectedPlan');
-
-  }, []);
+  }, [planType]);
 
 
   const fetchClientSecret = useCallback(async () => {
@@ -46,10 +45,16 @@ function PaymentForm() {
       const auth = getAuth();
       const idToken = await auth.currentUser.getIdToken();
       const userId = auth.currentUser.uid;
-      
-      console.log('Creating checkout session for user:', userId); // Debug log
-      
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/create-checkout-session`, {
+
+      console.log(`Creating checkout session for user ${userId} with plan type: ${planType}`);
+
+      // Choose the endpoint based on selected plan type
+      const endpoint =
+        planType === 'subscription'
+          ? `${import.meta.env.VITE_API_URL}/api/create-checkout-session`
+          : `${import.meta.env.VITE_API_URL}/api/create-one-time-checkout`;
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +62,7 @@ function PaymentForm() {
         },
         body: JSON.stringify({
           planType,
-          userId,  // Make sure we're sending the userId
+          userId,
           couponCode
         }),
         credentials: 'include'
