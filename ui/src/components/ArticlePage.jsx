@@ -31,23 +31,21 @@ function ArticlePage() {
                 
                 const readTime = calculateReadTime(content);
                 
-                // Format both dates if they exist
+                // Format both dates as "day month year"
                 const formattedData = {
                     ...attributes,
-                    date: attributes.date instanceof Date 
-                        ? attributes.date.toLocaleDateString('en-US', {
-                            year: 'numeric',
+                    date: new Date(attributes.date).toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    }),
+                    lastUpdated: attributes.lastUpdated 
+                        ? new Date(attributes.lastUpdated).toLocaleDateString('en-US', {
+                            day: 'numeric',
                             month: 'long',
-                            day: 'numeric'
+                            year: 'numeric'
                         })
-                        : attributes.date,
-                    lastUpdated: attributes.lastUpdated instanceof Date
-                        ? attributes.lastUpdated.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        })
-                        : attributes.lastUpdated,
+                        : undefined,
                     readTime: readTime
                 };
 
@@ -122,55 +120,34 @@ function ArticlePage() {
                 <article className="mx-auto max-w-3xl px-4 py-12">
                     {/* Article Header */}
                     <header className="mb-12">
-                        {/* Category Tag */}
-                        {article.category && (
-                            <div className="mb-6">
-                                <span className="bg-[#FFB252] text-[#395E44] px-4 py-2 rounded-full text-sm font-bold">
-                                    {article.category}
-                                </span>
-                            </div>
-                        )}
+                        {/* Breadcrumb Navigation */}
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-8">
+                            <Link to="/resources" className="hover:text-[#395E44]">Resources</Link>
+                            <span>→</span>
+                            <Link to="/articles" className="hover:text-[#395E44]">Articles</Link>
+                            <span>→</span>
+                            <span>All</span>
+                        </div>
 
                         {/* Title */}
                         <h1 className="text-[#395E44] text-4xl sm:text-5xl font-nohemi leading-tight mb-6">
                             {article.title}
                         </h1>
 
-                        {/* Article Meta */}
-                        <div className="flex flex-wrap items-center text-[#395E44] text-lg gap-4 mb-8">
+                        {/* Author Info - Simplified */}
+                        <div className="flex items-center gap-3 mb-8">
                             {article.author && (
-                                <span className="flex items-center font-nohemi">
-                                    By {article.author}
-                                </span>
-                            )}
-                            <time dateTime={article.date} className="font-nohemi">
-                                Published: {article.date}
-                            </time>
-                            {article.lastUpdated && (
-                                <time dateTime={article.lastUpdated} className="font-nohemi">
-                                    Updated: {article.lastUpdated}
-                                </time>
-                            )}
-                            <span className="font-nohemi">{article.readTime}</span>
-                        </div>
-
-                        {/* Tags */}
-                        {article.tags && article.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-8">
-                                {article.tags.map(tag => (
-                                    <span 
-                                        key={tag}
-                                        className="bg-white text-[#395E44] px-3 py-1 rounded-xl text-sm font-nohemi"
-                                    >
-                                        {tag}
+                                <div className="flex items-center gap-3">
+                                    <span className="text-gray-700 text-sm">
+                                        {article.author}, {article.authorTitle}
                                     </span>
-                                ))}
-                            </div>
-                        )}
+                                </div>
+                            )}
+                        </div>
 
                         {/* Featured Image */}
                         {article.image && (
-                            <div className="mb-8 rounded-xl overflow-hidden">
+                            <div className="rounded-xl overflow-hidden">
                                 <img
                                     src={article.image}
                                     alt={article.title}

@@ -6,6 +6,7 @@ readTime: "5 min"
 description: "What you need to know about Home inspections when buying a house......"
 image: "/home11.jpg"
 author: "Mitch"
+authorTitle: "Head of Product"
 tags: ["home inspection", "real estate", "buying guide"]
 category: "Home Buying"
 ---

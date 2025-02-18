@@ -6,6 +6,7 @@ readTime: "5 min"
 description: "Learn what to look for during your home inspection process..."
 image: "/home10.jpg"
 author: "Mitch"
+authorTitle: "Head of Product"
 tags: ["home inspection", "real estate", "buying guide"]
 category: "Home Buying"
 ---
