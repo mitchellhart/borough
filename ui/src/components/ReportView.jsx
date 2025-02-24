@@ -78,7 +78,7 @@ function ReportView() {
       try {
         const token = await user.getIdToken();
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/files/${fileId}`,
+          `${import.meta.env.VITE_API_URL}/api/files/${fileId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -167,27 +167,7 @@ function ReportView() {
       
       <div className="bg-surface">
 
-      <div className="flex items-center ml-6 ">
-        <button
-          onClick={() => navigate('/')}
-          className="inline-flex items-center text-gray-600 hover:text-gray-800"
-        >
-          <svg
-            className="w-6 h-6 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          Back
-        </button>
-      </div>
+ 
       </div>
 
 

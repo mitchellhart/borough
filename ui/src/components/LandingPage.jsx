@@ -85,23 +85,14 @@ function LandingPage() {
         <>
             <div className="rounded-b-3xl sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
                 <div className="mx-auto w-full max-w-[1250px] px-4 flex-grow">
-                    <motion.div
-                        initial={{ y: -50, opacity: 0 }}
-                        animate={{
-                            y: 0,
-                            opacity: 1,
-                            transition: { duration: 0.4, type: 'easeOut', stiffness: 100 }
-                        }}
+                    <div
+                   
                     >
                         <div className="container mx-auto max-w-6xl px-4 py-12">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                                 {/* Left Column */}
                                 <div className="lg:col-span-1 space-y-6">
-                                    <img
-                                        src={BoroLogo}
-                                        alt="Boro Logo"
-                                        className="w-24 mb-6"
-                                    />
+                                  
                                     <h1 className="text-[#395E44] text-4xl sm:text-5xl lg:text-6xl font-nohemi leading-tight">
                                         Your Inspection Reports, Simplified and Actionable
                                     </h1>
@@ -136,7 +127,7 @@ function LandingPage() {
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
 

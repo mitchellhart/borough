@@ -165,7 +165,7 @@ function App() {
             <ScrollToTop />
             <Routes>
               <Route path="/" element={
-                <motion.div 
+                <div 
                 initial={{ y: -50, opacity: 0 }} 
                 animate={{ 
                   y: 0, 
@@ -250,7 +250,7 @@ function App() {
                       </div>
                     )}
 
-        </motion.div>
+        </div>
             
               } />
               

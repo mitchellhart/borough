@@ -89,37 +89,35 @@ function NavBar({ onLoginClick, user }) {
           className="text-white text-base font-nohemi-medium px-4 py-2 rounded-2xl"
           style={{ color: '#395E44', border: '2px solid #395E44' }}
         >
-          Login
+          Sign In
         </button>
       );
     }
   };
 
-  // Render different styles for index page
-  if (isIndexPage) {
-    return (
-      <div className="w-full px-10 pt-4 flex justify-end items-center" style={{ backgroundColor: '#E6E2DD' }}>
-        <div className="flex-grow">
-          {user && (
-            <Link to="/">
-              <img src={BoroLogo} alt="Boro logo" className="h-6" />
-            </Link>
-          )}
+  const renderNavItems = () => {
+    if (!user) {
+      return (
+        <div className="flex justify-center flex-1">
+          <Link to="/pricing" className="text-gray-700 hover:text-gray-900 px-4">Pricing</Link>
+          <Link to="/articles" className="text-gray-700 hover:text-gray-900 px-4">Blog</Link>
         </div>
-        {renderUserSection()}
-      </div>
-    );
-  }
+      );
+    }
+    return <div className="flex justify-center flex-1" />;  // Empty div to maintain layout
+  };
+
 
   // Regular navbar for other pages
   return (
-    <nav className="p-8" style={{ backgroundColor: '#E6E2DD' }}>
+    <nav className="pt-8 px-16" style={{ backgroundColor: '#E6E2DD' }}>
       <div className="flex justify-between items-center">
-        {user && (
-          <Link to="/">
-            <img src={BoroLogo} alt="Boro logo" className="h-6" />
-          </Link>
-        )}
+        <Link to="/">
+          <img src={BoroLogo} alt="Boro logo" className="h-6" />
+        </Link>
+        <div className="hidden md:flex items-center pr-4">
+          {renderNavItems()}
+        </div>
         <div className="pr-4">
           {renderUserSection()}
         </div>
