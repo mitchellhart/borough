@@ -115,8 +115,7 @@ function ArticlePage() {
 
             <ReadingProgress />
 
-            {/* Added container with rounded corners and background */}
-            <div className="rounded-3xl sm:p-8 my-10" style={{ backgroundColor: '#E6E2DD' }}>
+            <div className="sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
                 <article className="mx-auto max-w-3xl px-4 py-12">
                     {/* Article Header */}
                     <header className="mb-12">
@@ -203,8 +202,6 @@ function ArticlePage() {
                         </button>
                     </div>
                 </article>
-            </div>
-
             {/* Call to Action */}
             <div className="mx-auto max-w-3xl px-4 mb-16 text-center">
                 <Link 
@@ -214,6 +211,8 @@ function ArticlePage() {
                     Get Started with Boro Inspect
                 </Link>
             </div>
+            </div>
+
         </>
     );
 }

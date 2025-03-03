@@ -13,6 +13,7 @@ import {
 import * as Select from '@radix-ui/react-select';
 import { ChevronDownIcon, ChevronUpIcon, CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
 import FindingsTable from './FindingsTable';
+import SystemsOverview from './SystemsOverview.jsx';
 import NegotiationGuide from './NegotiationGuide';
 
 function ReportView() {
@@ -172,7 +173,7 @@ function ReportView() {
 
 
       {file && file.ai_analysis && (
-        <div className="flex flex-col gap-4 pb-60">
+        <div className="flex flex-col pb-60 bg-[#F7F7F7]">
           <ReportSummary
             address={getAnalysis()?.property?.address || 'No address available'}
             date={getAnalysis()?.property?.inspectionDate || 'No date available'}
@@ -187,6 +188,10 @@ function ReportView() {
             status={file.status}
             findings={getAnalysis()?.findings || []}
           />
+          
+
+          {/* Systems Overview Section */}
+          {/* <SystemsOverview /> */}
 
           <ReportSection
             title="Summary"

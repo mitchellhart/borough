@@ -136,7 +136,7 @@ function ReportSummary(props) {
   };
 
   return (
-      <div className="p-8 pt-16 rounded-b-2xl bg-surface">
+      <div className="p-8 pt-16 bg-[#F7F7F7]">
       <div className="mb-12">
         <div className="flex justify-between items-start">
           <div>

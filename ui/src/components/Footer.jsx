@@ -4,10 +4,10 @@ import BoroLogo from '../assets/boro-logo.svg';
 
 function Footer() {
   return (
-    <footer className="mt-auto py-4 text-center text-gray-600 text-sm">
+    <footer className="mt-auto text-center text-gray-600 text-sm">
     
 
-      <div className="rounded-t-3xl sm:p-8 mt-10 h-[200px] relative" style={{ backgroundColor: '#6D8671' }}>
+      <div className="rounded-t-3xl sm:p-8 mt-10 h-[200px] relative" style={{ backgroundColor: '#E6E2DD' }}>
                 <div className="mx-auto max-w-6xl px-4 my-10">
                     <div className="flex justify-between items-center"> {/* Changed to flex with justify-between */}
                         {/* Left Column */}

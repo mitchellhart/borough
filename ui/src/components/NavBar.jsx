@@ -108,9 +108,11 @@ function NavBar({ onLoginClick, user }) {
   };
 
 
-  // Regular navbar for other pages
+  // Full Navbar Wrapper
   return (
-    <nav className="pt-8 px-16" style={{ backgroundColor: '#E6E2DD' }}>
+      <>
+
+    <nav className="pt-8 px-16" style={{ backgroundColor: user ? '#F7F7F7' : '#E6E2DD' }}>
       <div className="flex justify-between items-center">
         <Link to="/">
           <img src={BoroLogo} alt="Boro logo" className="h-6" />
@@ -123,6 +125,7 @@ function NavBar({ onLoginClick, user }) {
         </div>
       </div>
     </nav>
+    </>
   );
 }
 

@@ -145,7 +145,9 @@ function App() {
 
       </Helmet>
       
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#6D8671' }}>
+    {/* FULL PAGE BACKGROUND DIV */}
+    
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F7F7F7' }}>
       <div className="mx-auto w-full max-w-[1250px] px-4 flex-grow" >
         
             <NavBar onLoginClick={() => setShowAuth(true)} user={user} />
@@ -234,8 +236,8 @@ function App() {
                     
                     {/* File Upload */}
                     {user && (subscriptionStatus === 'active' || credits > 0) && (
-                      <div className="sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
-                        <div className="col-span-full" style={{ backgroundColor: '#E6E2DD' }}>
+                      <div className="sm:p-8" style={{ backgroundColor: '#F7F7F7' }}>
+                        <div className="col-span-full">
                           <FileUpload onFileProcessed={handleUploadSuccess} />
                         </div>
                       </div>
@@ -243,8 +245,8 @@ function App() {
 
                     {/* Reports Preview - shown for all logged in users */}
                     {user && (
-                      <div className="sm:p-8" style={{ backgroundColor: '#E6E2DD' }}>
-                        <div className="col-span-full" style={{ backgroundColor: '#E6E2DD' }}>
+                      <div className="sm:p-8" style={{ backgroundColor: '#F7F7F7' }}>
+                        <div className="col-span-full" >
                           <ReportsPreview ref={userFilesRef} />
                         </div>
                       </div>

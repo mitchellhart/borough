@@ -1,5 +1,5 @@
 import BoroLogo from '../assets/boro-logo.svg';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from "motion/react"
 import waveIllo from '../assets/wave-illo.png';
 import sortIllo from '../assets/sortImage.png';
@@ -10,6 +10,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Autoplay } from 'swiper/modules';
 import { useArticles } from '../hooks/useArticles'; 
+import SystemsOverview from './SystemsOverview';
 
 import house1 from '../assets/homes/home1.jpg';
 import house2 from '../assets/homes/home2.jpg';
@@ -110,19 +111,19 @@ function LandingPage() {
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
-                                        <span>Detailed Cost Estimates</span>
+                                        <span>Instant Cost Estimate</span>
                                     </div>
                                     <div className="flex items-center space-x-4 text-lg">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="size-10 stroke-[#395E44] p-1">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
-                                        <span>Negotiation Guide</span>
+                                        <span>Personalized Negotiation Guide</span>
                                     </div>
                                     <div className="flex items-center space-x-4 text-lg">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"  className="size-10 stroke-[#395E44]  p-1">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
-                                        <span>Agents never change your report</span>
+                                        <span>Get your home at the right price</span>
                                     </div>
                                 </div>
                             </div>
@@ -359,47 +360,59 @@ function LandingPage() {
                 <h2 className="text-[#395E44] text-4xl font-nohemi mb-8">Latest Articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {articles.slice(0, 3).map((article, index) => {
-                        const imageSrc = article.image.startsWith('/') 
-                            ? article.image 
+                        const imageSrc = article.image.startsWith('/')
+                            ? article.image
                             : house10;
-
                         return (
-                            <article key={index} className="rounded-xl overflow-hidden shadow-lg bg-white">
-                                <img 
-                                    src={imageSrc}
-                                    alt={article.title} 
-                                    className="w-full h-48 object-cover"
-                                />
-                                <div className="p-6">
-                                    <h3 className="text-xl font-nohemi text-[#395E44] mb-2">
-                                        <a href={`/articles/${article.slug}`} className="hover:text-[#FFB252]">
+                            <Link 
+                                key={index} 
+                                to={`/articles/${article.slug}`} 
+                                className="block rounded-xl overflow-hidden transition-shadow duration-300 hover:shadow-lg"
+                            >
+                                <article className="flex flex-col h-full shadow-none">
+                                    <img 
+                                        src={imageSrc}
+                                        alt={article.title} 
+                                        className="w-full h-48 object-cover"
+                                    />
+                                    <div className="p-6 bg-white flex flex-col flex-grow">
+                                        {article.category && (
+                                            <p className="text-sm text-gray-500 uppercase tracking-widest mb-2">
+                                                {article.category}
+                                            </p>
+                                        )}
+                                        <h3 className="text-xl font-nohemi text-[#395E44] mb-2">
                                             {article.title}
-                                        </a>
-                                    </h3>
-                                    <p className="text-gray-600 mb-4">{article.description}</p>
-                                    <div className="flex items-center text-sm text-gray-500">
-                                        <span>{article.readTime}</span>
-                                        <span className="mx-2">•</span>
-                                        <span>{new Date(article.date).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}</span>
+                                        </h3>
+                                        <p className="text-gray-600 mb-4">{article.description}</p>
+                                        <div className="mt-auto">
+                                            <div className="flex items-center text-sm text-gray-500">
+                                                <span>{article.readTime}</span>
+                                                <span className="mx-2">•</span>
+                                                <span>{new Date(article.date).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </article>
+                                </article>
+                            </Link>
                         );
                     })}
                 </div>
                 <div className="text-center mt-8">
-                    <a 
-                        href="/articles" 
+                    <Link 
+                        to="/articles" 
                         className="inline-block bg-[#E6E2DD] text-[#395E44] py-3 px-6 rounded-xl text-lg font-bold hover:bg-opacity-90 transition-colors"
                     >
                         View All Articles
-                    </a>
+                    </Link>
                 </div>
             </div>
+
+
 
             <Footer />
 
