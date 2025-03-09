@@ -11,8 +11,6 @@ tags: ["real estate", "buying guide"]
 category: "Home Buying"
 ---
 
-# 5 Things I Wish I Knew Before Buying My First Home
-
 I bought my first home less than a year ago and I've been reflecting on the process. Here are 5 things I wish I knew before buying my first home.
 
 ## 1. Real estate agents' #1 goal is to make the sale

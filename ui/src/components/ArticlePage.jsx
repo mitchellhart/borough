@@ -121,8 +121,7 @@ function ArticlePage() {
                     <header className="mb-12">
                         {/* Breadcrumb Navigation */}
                         <div className="flex items-center gap-2 text-sm text-gray-600 mb-8">
-                            <Link to="/resources" className="hover:text-[#395E44]">Resources</Link>
-                            <span>→</span>
+                           
                             <Link to="/articles" className="hover:text-[#395E44]">Articles</Link>
                             <span>→</span>
                             <span>All</span>
@@ -157,21 +156,20 @@ function ArticlePage() {
                     </header>
 
                     {/* Article Content */}
-                    <div className="prose prose-lg max-w-none">
-                        <div className="prose prose-lg max-w-none 
-                            prose-headings:text-[#395E44] prose-headings:font-nohemi
-                            prose-h1:text-4xl prose-h1:mb-8
-                            prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-12 prose-h2:font-nohemi prose-h2:text-[#395E44]
-                            prose-h3:text-2xl prose-h3:mb-4
-                            prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
-                            prose-a:text-[#FFB252] prose-a:no-underline hover:prose-a:underline
-                            prose-strong:text-[#395E44] prose-strong:font-bold
-                            prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-6
-                            prose-ol:list-decimal prose-ol:pl-6 prose-ol:mb-6
-                            prose-li:mb-2"
-                        >
-                            <ReactMarkdown>{article.content}</ReactMarkdown>
-                        </div>
+                    <div className="prose prose-lg max-w-none 
+                        prose-headings:text-[#395E44] prose-headings:font-nohemi
+                        prose-h1:text-5xl prose-h1:mb-8
+                        prose-h2:text-4xl prose-h2:mb-6 prose-h2:mt-12 prose-h2:font-nohemi prose-h2:text-[#395E44]
+                        prose-h3:text-3xl prose-h3:mb-4
+                        prose-h4:text-2xl prose-h4:mb-4
+                        prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
+                        prose-a:text-[#FFB252] prose-a:no-underline hover:prose-a:underline
+                        prose-strong:text-[#395E44] prose-strong:font-bold
+                        prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-6 prose-ul:space-y-2
+                        prose-ol:list-decimal prose-ol:pl-6 prose-ol:mb-6
+                        prose-li:text-gray-700 prose-li:mb-2 prose-li:marker:text-[#395E44]"
+                    >
+                        <ReactMarkdown>{article.content}</ReactMarkdown>
                     </div>
 
                     {/* Article Footer */}

@@ -599,7 +599,7 @@ Always prioritize accuracy, clarity, and highlighting potential risks for the li
           content: file.text_content
         }
       ],
-      model: "gpt-4o",  // change model here
+      model: "o3-mini",  // change model here
       response_format: {
         type: "json_schema",
         json_schema: {

@@ -2,7 +2,7 @@
 title: "Essential Home Inspection Tips for First-Time Buyers"
 date: "2025-01-12"
 lastUpdated: "2025-01-12"
-readTime: "5 min"
+readTime: "10 min"
 description: "What you need to know about Home inspections when buying a house......"
 image: "/home11.jpg"
 author: "Mitch"
@@ -10,8 +10,6 @@ authorTitle: "Head of Product"
 tags: ["home inspection", "real estate", "buying guide"]
 category: "Home Buying"
 ---
-
-# Essential Home Inspection Tips for First-Time Buyers
 
 Buying your first home is exciting, but it can also feel overwhelming. While you might be focused on finding the perfect layout or dream kitchen, it's crucial to look beyond the surface appeal. This guide will help you understand what to look for before and during your home inspection to make an informed decision about your investment.
 
