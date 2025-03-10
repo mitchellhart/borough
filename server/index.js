@@ -13,6 +13,12 @@ const { type } = require('os');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { updateUserSubscription, getUserSubscriptionStatus, canAnalyzeReport, deductCredit, pool } = require('./routes/users');
 
+// Add Mistral AI client
+const { Mistral } = require('@mistralai/mistralai');
+const mistralClient = new Mistral({
+  apiKey: process.env.MISTRAL_API_KEY
+});
+
 const nodeMailer = require('nodemailer');
 
 
@@ -315,20 +321,8 @@ app.post('/api/files', authenticateUser, upload.single('file'), async (req, res)
     // Only process PDFs
     const isPDF = req.file.mimetype === 'application/pdf';
     let extractedText = '';
-
-    if (isPDF) {
-      // Extract text from PDF
-      extractedText = await new Promise((resolve, reject) => {
-        let text = '';
-        new PdfReader().parseFileItems(req.file.path, (err, item) => {
-          if (err) reject(err);
-          else if (!item) resolve(text);
-          else if (item.text) text += item.text + ' ';
-        });
-      });
-    }
-
-    // Upload to Firebase Storage
+    
+    // Upload to Firebase Storage first to get URL for Mistral
     await bucket.upload(req.file.path, {
       destination: filePath,
       metadata: {
@@ -346,6 +340,49 @@ app.post('/api/files', authenticateUser, upload.single('file'), async (req, res)
       action: 'read',
       expires: '03-01-2500' // Far future date - you might want to adjust this
     });
+
+    if (isPDF) {
+      // Check if MISTRAL_API_KEY is set and use Mistral OCR if available
+      if (process.env.MISTRAL_API_KEY) {
+        try {
+          console.log('Using Mistral OCR for text extraction');
+          const ocrResponse = await mistralClient.ocr.process({
+            model: "mistral-ocr-latest",
+            document: {
+              type: "document_url",
+              documentUrl: url
+            }
+          });
+          
+          // Combine all pages' markdown content
+          extractedText = ocrResponse.pages.map(page => page.markdown).join('\n\n');
+          console.log('Mistral OCR extraction successful');
+        } catch (ocrError) {
+          console.error('Mistral OCR Error:', ocrError);
+          console.log('Falling back to PdfReader');
+          // Fall back to PdfReader if Mistral OCR fails
+          extractedText = await new Promise((resolve, reject) => {
+            let text = '';
+            new PdfReader().parseFileItems(req.file.path, (err, item) => {
+              if (err) reject(err);
+              else if (!item) resolve(text);
+              else if (item.text) text += item.text + ' ';
+            });
+          });
+        }
+      } else {
+        // Use PdfReader as before if Mistral API key is not set
+        console.log('Using PdfReader for text extraction');
+        extractedText = await new Promise((resolve, reject) => {
+          let text = '';
+          new PdfReader().parseFileItems(req.file.path, (err, item) => {
+            if (err) reject(err);
+            else if (!item) resolve(text);
+            else if (item.text) text += item.text + ' ';
+          });
+        });
+      }
+    }
 
     const fileData = {
       user_id: userId,

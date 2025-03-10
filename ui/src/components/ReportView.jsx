@@ -24,11 +24,30 @@ function ReportView() {
   const [error, setError] = useState(null);
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterUrgency, setFilterUrgency] = useState('all');
+  const [activeSection, setActiveSection] = useState('summary');
   const auth = getAuth();
   const [sorting, setSorting] = useState([{
     id: 'urgency',
     desc: false
   }]);
+
+  // Add refs for scrolling
+  const summaryRef = React.useRef(null);
+  const itemsRef = React.useRef(null);
+  const negotiationRef = React.useRef(null);
+
+  const scrollToSection = (sectionId) => {
+    setActiveSection(sectionId);
+    const refs = {
+      summary: summaryRef,
+      items: itemsRef,
+      negotiation: negotiationRef
+    };
+    
+    if (refs[sectionId]?.current) {
+      refs[sectionId].current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const getAnalysis = () => {
     if (!file?.ai_analysis) return null;
@@ -164,16 +183,41 @@ function ReportView() {
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto relative">
       
-      <div className="bg-surface">
-
- 
-      </div>
-
+      {/* Fixed right-side table of contents */}
+      {file && (
+        <div className="fixed right-6 bottom-6 z-20 bg-white shadow-lg rounded-xl p-3 w-50">
+          <div className="flex flex-col space-y-4">
+            <h3 className="font-semibold text-sm text-gray-700 mb-1">Contents</h3>
+            <button 
+              onClick={() => scrollToSection('summary')}
+              className={`text-left px-2 py-1 text-sm font-medium ${activeSection === 'summary' ? 'text-primary border-l-2 border-primary pl-1' : 'text-gray-600'}`}
+            >
+              Summary
+            </button>
+            <button 
+              onClick={() => scrollToSection('items')}
+              className={`text-left px-2 py-1 text-sm font-medium ${activeSection === 'items' ? 'text-primary border-l-2 border-primary pl-1' : 'text-gray-600'}`}
+            >
+              Items
+            </button>
+            <button 
+              onClick={() => scrollToSection('negotiation')}
+              className={`text-left px-2 py-1 text-sm font-medium ${activeSection === 'negotiation' ? 'text-primary border-l-2 border-primary pl-1' : 'text-gray-600'}`}
+            >
+              Negotiation Guide
+            </button>
+          </div>
+        </div>
+      )}
 
       {file && file.ai_analysis && (
-        <div className="flex flex-col pb-60 bg-[#F7F7F7]">
+        <div 
+        
+        className="flex flex-col pb-60 bg-[#F7F7F7]"
+        >
+          <div ref={summaryRef}>
           <ReportSummary
             address={getAnalysis()?.property?.address || 'No address available'}
             date={getAnalysis()?.property?.inspectionDate || 'No date available'}
@@ -187,39 +231,44 @@ function ReportView() {
             uploadDate={file.uploadDate}
             status={file.status}
             findings={getAnalysis()?.findings || []}
+            file={file}
           />
+          </div>
           
-
           {/* Systems Overview Section */}
           {/* <SystemsOverview /> */}
 
-          <ReportSection
-            title="Summary"
-            findings={processedFindings}
-            filters={filters}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
-            filterUrgency={filterUrgency}
-            setFilterUrgency={setFilterUrgency}
-            formatCurrency={formatCurrency}
-            
-          />
+          <div ref={itemsRef}>
+            <ReportSection
+              title="Summary"
+              findings={processedFindings}
+              filters={filters}
+              filterCategory={filterCategory}
+              setFilterCategory={setFilterCategory}
+              filterUrgency={filterUrgency}
+              setFilterUrgency={setFilterUrgency}
+              formatCurrency={formatCurrency}
+            />
+          </div>
 
           
+            {/* <FindingsTable
+              findings={processedFindings}
+              filters={filters}
+              filterCategory={filterCategory}
+              setFilterCategory={setFilterCategory}
+              filterUrgency={filterUrgency}
+              setFilterUrgency={setFilterUrgency}
+              formatCurrency={formatCurrency}
+            /> */}
+          
 
-          {/* <FindingsTable
-            findings={processedFindings}
-            filters={filters}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
-            filterUrgency={filterUrgency}
-            setFilterUrgency={setFilterUrgency}
-            formatCurrency={formatCurrency}
-          /> */}
-
-          <NegotiationGuide 
-            totalEstimate={calculateTotalEstimate()}
-          />
+          <div ref={negotiationRef}>
+            <NegotiationGuide 
+              totalEstimate={calculateTotalEstimate()}
+            />
+          </div>
+          
         </div>
       )}
     </div>

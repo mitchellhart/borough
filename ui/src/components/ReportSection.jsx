@@ -105,7 +105,7 @@ function ReportSection({
 
             <button 
             onClick={openModal}
-            class="hover:bg-gray-400 text-sm text-gray-800 font-bold py-2 px-2 rounded-xl inline-flex gap-2 items-center border mt-10">
+            class="hover:bg-gray-200 text-sm text-gray-800 font-bold py-2 px-2 rounded-xl inline-flex gap-2 items-center border mt-10">
 
               
               <span>Do it yourself?</span>
